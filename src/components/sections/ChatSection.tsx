@@ -151,7 +151,7 @@ export default function ChatSection() {
   const [messages, setMessages] = useState<Message[]>([
     {
       id: '1',
-      text: "Hi! I'm ZeroBot, your AI assistant. I know everything about Zero Point Labs - our services, expertise, and how we can help transform your digital presence. What would you like to know?",
+      text: "Hi! I'm ZeroBot, your business development consultant at Zero Point Labs. I help companies identify digital transformation opportunities and find the right web solutions.\n\nTo get started - what industry is your business in, and what's your biggest digital challenge right now?",
       isBot: true,
       timestamp: new Date()
     }
@@ -172,11 +172,48 @@ export default function ChatSection() {
 
   // Generate session ID on component mount
   useEffect(() => {
-    if (!sessionId) {
-      const newSessionId = `session_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
-      setSessionId(newSessionId);
+    // Check for existing session in localStorage
+    let existingSessionId = localStorage.getItem('chatbot_session_id');
+    
+    if (!existingSessionId) {
+      existingSessionId = `session_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+      localStorage.setItem('chatbot_session_id', existingSessionId);
     }
-  }, [sessionId]);
+    
+    setSessionId(existingSessionId);
+    
+    // Load conversation history
+    loadConversationHistory(existingSessionId);
+  }, []);
+
+  const loadConversationHistory = async (sessionId: string) => {
+    try {
+      const response = await fetch(`/api/chat/history/${sessionId}`);
+      
+      if (response.ok) {
+        const data = await response.json();
+        
+        if (data.messages && data.messages.length > 0) {
+          // Convert backend messages to frontend format
+          const frontendMessages = data.messages.map((msg: any) => ({
+            id: msg.id,
+            text: msg.content,
+            isBot: msg.role === 'assistant',
+            timestamp: new Date(msg.timestamp)
+          }));
+          
+          // Keep the initial message and add conversation history
+          setMessages(prev => [
+            prev[0], // Keep initial ZeroBot message
+            ...frontendMessages
+          ]);
+        }
+      }
+    } catch (error) {
+      console.error('Failed to load conversation history:', error);
+      // Continue with default message if history loading fails
+    }
+  };
 
   // Auto-scroll to bottom when new messages arrive
   const scrollToBottom = () => {
@@ -213,8 +250,19 @@ export default function ChatSection() {
     setIsLoading(true);
     setIsTyping(true);
 
+    // Create bot message placeholder for streaming
+    const botMessageId = (Date.now() + 1).toString();
+    const botMessage: Message = {
+      id: botMessageId,
+      text: "",
+      isBot: true,
+      timestamp: new Date()
+    };
+
+    setMessages(prev => [...prev, botMessage]);
+
     try {
-      // Call the chat API
+      // Call the chat API with streaming enabled
       const response = await fetch('/api/chat/message', {
         method: 'POST',
         headers: {
@@ -223,7 +271,7 @@ export default function ChatSection() {
         body: JSON.stringify({
           message: messageText,
           sessionId: sessionId,
-          streaming: false
+          streaming: true  // Enable streaming
         }),
       });
 
@@ -232,31 +280,53 @@ export default function ChatSection() {
         throw new Error(errorData.error || 'Failed to get response');
       }
 
-      const data = await response.json();
+      // Handle streaming response
+      const reader = response.body?.getReader();
+      const decoder = new TextDecoder();
+      let fullResponse = '';
 
-      // Add bot response
-      const botMessage: Message = {
-        id: (Date.now() + 1).toString(),
-        text: data.message || "I apologize, but I couldn't generate a proper response. Please try again.",
-        isBot: true,
-        timestamp: new Date()
-      };
-
-      setMessages(prev => [...prev, botMessage]);
+      if (reader) {
+        while (true) {
+          const { done, value } = await reader.read();
+          if (done) break;
+          
+          const chunk = decoder.decode(value);
+          const lines = chunk.split('\n');
+          
+          for (const line of lines) {
+            if (line.startsWith('data: ')) {
+              try {
+                const data = JSON.parse(line.slice(6));
+                if (data.content) {
+                  fullResponse = data.content;
+                  // Update message in real-time
+                  setMessages(prev => prev.map(msg => 
+                    msg.id === botMessageId 
+                      ? { ...msg, text: fullResponse }
+                      : msg
+                  ));
+                }
+                if (data.finished) {
+                  break;
+                }
+              } catch (parseError) {
+                console.error('Error parsing streaming data:', parseError);
+              }
+            }
+          }
+        }
+      }
 
     } catch (error) {
       console.error('Chat error:', error);
       setError(error instanceof Error ? error.message : 'An error occurred');
       
-      // Add error message
-      const errorMessage: Message = {
-        id: (Date.now() + 1).toString(),
-        text: "I apologize, but I'm experiencing some technical difficulties. Please try again in a moment, or feel free to contact our team directly at info@zeropointlabs.com for immediate assistance.",
-        isBot: true,
-        timestamp: new Date()
-      };
-
-      setMessages(prev => [...prev, errorMessage]);
+      // Update with error message
+      setMessages(prev => prev.map(msg => 
+        msg.id === botMessageId 
+          ? { ...msg, text: "I apologize, but I'm experiencing some technical difficulties. Please try again in a moment, or feel free to contact our team directly at info@zeropointlabs.com for immediate assistance." }
+          : msg
+      ));
     } finally {
       setIsLoading(false);
       setIsTyping(false);

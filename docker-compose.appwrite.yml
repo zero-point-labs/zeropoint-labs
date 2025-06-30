@@ -6,6 +6,8 @@ services:
     build:
       context: .
       dockerfile: Dockerfile
+      args:
+        - OPENAI_API_KEY=${OPENAI_API_KEY:-placeholder}
     container_name: zeropoint-labs-website
     restart: unless-stopped
     ports:
@@ -16,6 +18,8 @@ services:
       # AppWrite configuration
       - NEXT_PUBLIC_APPWRITE_ENDPOINT=https://zeropoint-labs.com/v1
       - NEXT_PUBLIC_APPWRITE_PROJECT_ID=zeropoint-labs
+    env_file:
+      - .env.local
     networks:
       - zeropoint-network
     depends_on:
@@ -56,7 +60,7 @@ services:
       - _APP_SYSTEM_RESPONSE_FORMAT=
       - _APP_OPTIONS_ABUSE=enabled
       - _APP_OPTIONS_ROUTER_PROTECTION=disabled
-      - _APP_OPENSSL_KEY_V1=your_appwrite_openssl_key_here
+      - _APP_OPENSSL_KEY_V1=${APPWRITE_SECRET_KEY:-your_appwrite_secret_key_here}
       - _APP_DOMAIN=zeropoint-labs.com
       - _APP_DOMAIN_TARGET=zeropoint-labs.com
       - _APP_REDIS_HOST=redis
@@ -67,7 +71,7 @@ services:
       - _APP_DB_PORT=3306
       - _APP_DB_SCHEMA=appwrite
       - _APP_DB_USER=appwrite
-      - _APP_DB_PASS=your_database_password_here
+      - _APP_DB_PASS=${MYSQL_PASSWORD:-your_database_password_here}
       - _APP_SMTP_HOST=
       - _APP_SMTP_PORT=
       - _APP_SMTP_SECURE=
@@ -121,10 +125,10 @@ services:
     volumes:
       - appwrite-mariadb:/var/lib/mysql:rw
     environment:
-      - MYSQL_ROOT_PASSWORD=your_mysql_root_password_here
+      - MYSQL_ROOT_PASSWORD=${MYSQL_ROOT_PASSWORD:-your_mysql_root_password_here}
       - MYSQL_DATABASE=appwrite
       - MYSQL_USER=appwrite
-      - MYSQL_PASSWORD=your_database_password_here
+      - MYSQL_PASSWORD=${MYSQL_PASSWORD:-your_database_password_here}
     command: 'mysqld --innodb-flush-method=fsync'
 
   # AppWrite Redis Cache

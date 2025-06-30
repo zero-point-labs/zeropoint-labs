@@ -1,0 +1,19 @@
+# Production Environment Variables Template
+# Copy this content to .env.production on your VPS and set actual passwords
+# DO NOT commit .env.production to Git!
+
+# OpenAI Configuration
+OPENAI_API_KEY=sk-your_actual_openai_api_key_here
+
+# Appwrite Configuration
+NEXT_PUBLIC_APPWRITE_ENDPOINT=https://zeropoint-labs.com/v1
+NEXT_PUBLIC_APPWRITE_PROJECT_ID=zeropoint-labs
+APPWRITE_API_KEY=your_actual_appwrite_server_api_key_here
+
+# Database Passwords (MUST MATCH between Appwrite and MariaDB)
+MYSQL_ROOT_PASSWORD=your_secure_root_password_here
+MYSQL_PASSWORD=your_secure_database_password_here
+APPWRITE_SECRET_KEY=your_secure_appwrite_secret_key_here
+
+# Chatbot Configuration
+CHATBOT_SESSION_TIMEOUT=86400000 
