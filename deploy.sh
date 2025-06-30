@@ -31,7 +31,7 @@ echo "✅ Environment variables validated"
 
 # Pull latest changes
 echo "📥 Pulling latest changes..."
-git pull origin main
+git pull origin master
 
 # Install dependencies
 echo "📦 Installing dependencies..."
