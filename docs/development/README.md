@@ -1,297 +1,268 @@
-# Development Documentation
+# 🛠️ Development Documentation
 
-This folder contains guides for development workflows, update procedures, and ongoing maintenance of the Zero Point Labs website.
+This section contains documentation for development workflows, best practices, and local setup procedures.
 
-## 📋 Available Guides
+## 📋 **Available Guides**
 
-### 🔄 [UPDATE_WORKFLOW.md](./UPDATE_WORKFLOW.md)
-**Quick Update Workflow Guide**
+### **Development Workflow**
+- **[UPDATE_WORKFLOW.md](./UPDATE_WORKFLOW.md)** - Quick workflow for making changes and deploying updates to the live website
+- **[INSTALL_NODEJS_VPS.md](./INSTALL_NODEJS_VPS.md)** - Node.js installation guide for VPS environments
 
-A streamlined guide for making changes to your website and deploying them to your live VPS. This guide covers:
+## 🎯 **Quick Start**
 
-- **3-Step Update Process**: Edit → Push → Deploy
-- **Local Development**: Making changes on your Mac
-- **Version Control**: Git workflow for updates
-- **Production Deployment**: Automated deployment to VPS
-- **Verification Steps**: Ensuring updates are live
-- **Troubleshooting**: Common issues and solutions
-- **Best Practices**: Commit messages, testing, backups
+### **Local Development Setup**
+1. Clone the repository
+2. Install dependencies: `npm install`
+3. Set up environment variables
+4. Run development server: `npm run dev`
 
-**Use this guide for**: Day-to-day updates and maintenance of your live website.
+### **Update Workflow**
+1. Follow [UPDATE_WORKFLOW.md](./UPDATE_WORKFLOW.md) for the 3-step process
+2. Edit → Push → Deploy
+3. Test changes locally first
+4. Deploy to production
 
-**Time required**: 2-8 minutes per update
+## 🔄 **Development Workflow**
 
----
-
-## 🚀 Development Workflow Overview
-
-The Zero Point Labs website uses a modern development workflow designed for efficiency and reliability:
-
-### Local Development → Version Control → Production
-```
-┌─────────────────┐    ┌─────────────────┐    ┌─────────────────┐
-│  Local Changes  │───▶│   Git Push      │───▶│ VPS Deployment  │
-│   (Your Mac)    │    │  (Repository)   │    │  (Live Site)    │
-└─────────────────┘    └─────────────────┘    └─────────────────┘
-```
-
-### Key Benefits:
-- **Fast Updates**: Changes live in 2-8 minutes
-- **Version Control**: Full history of all changes
-- **Rollback Capability**: Easy to revert if needed
-- **Automated Deployment**: Minimal manual steps
-- **Testing Options**: Local testing before deployment
-
-## 🛠️ Development Environment
-
-### Local Setup (Your Mac):
-- **Project Location**: `/Users/akyriakouu/Documents/Zero Point/Projects/zeropoint-labs-hostinger`
-- **Node.js**: Version 18+ for Next.js development
-- **Package Manager**: npm for dependency management
-- **Editor**: Any code editor (VS Code recommended)
-- **Git**: Version control for change tracking
-
-### Production Environment (VPS):
-- **Location**: `/var/www/zeropoint-labs/zeropoint-hostinger`
-- **Docker**: Containerized deployment
-- **Nginx**: Reverse proxy and web server
-- **SSL**: Let's Encrypt certificates
-- **Monitoring**: Docker health checks
-
-## 📝 Common Development Tasks
-
-### 1. Content Updates
-**Examples**: Text changes, image updates, pricing modifications
-
+### **Standard Process**
 ```bash
-# Edit files locally
-nano src/components/sections/HeroSection.tsx
-
-# Quick deploy
-git add . && git commit -m "Update hero text" && git push
-```
-
-### 2. Styling Changes
-**Examples**: CSS updates, layout modifications, responsive fixes
-
-```bash
-# Edit styles
-nano src/app/globals.css
-
-# Test locally (optional)
-npm run dev
-
-# Deploy
-git add . && git commit -m "Fix mobile layout" && git push
-```
-
-### 3. Component Updates
-**Examples**: New features, functionality changes, bug fixes
-
-```bash
-# Edit components
-nano src/components/sections/PricingSection.tsx
-
-# Test thoroughly
-npm run dev
-
-# Deploy with descriptive message
-git add . && git commit -m "Add new pricing tier" && git push
-```
-
-### 4. Configuration Changes
-**Examples**: Environment variables, build settings, dependencies
-
-```bash
-# Update configuration
-nano next.config.js
-
-# Install new dependencies (if needed)
-npm install new-package
-
-# Deploy
-git add . && git commit -m "Add new configuration" && git push
-```
-
-## ⚡ Quick Commands Reference
-
-### Local Development:
-```bash
-# Navigate to project
+# 1. Local Development
 cd "/Users/akyriakouu/Documents/Zero Point/Projects/zeropoint-labs-hostinger"
+npm run dev  # Test locally (optional)
 
-# Start development server
-npm run dev
+# 2. Version Control
+git add .
+git commit -m "Describe your changes"
+git push origin master
 
-# Build for production (testing)
+# 3. Production Deployment
+ssh root@YOUR_VPS_IP
+cd /var/www/zeropoint-labs/zeropoint-hostinger
+git pull origin master
+./deploy.sh
+```
+
+### **Environment Setup**
+- **Local**: `.env.local` for development
+- **Production**: Environment variables in VPS
+- **Docker**: Build arguments and runtime variables
+- **Security**: Never commit sensitive keys
+
+## 🛠️ **Development Stack**
+
+### **Frontend Technologies**
+- **Framework**: Next.js 15.3.3 with App Router
+- **Language**: TypeScript for type safety
+- **Styling**: Tailwind CSS with custom components
+- **UI Library**: Radix UI primitives
+- **Animations**: Framer Motion
+- **3D Graphics**: Three.js with React Three Fiber
+
+### **Backend & API**
+- **API Routes**: Next.js API routes
+- **Database**: Appwrite (optional)
+- **AI Integration**: OpenAI GPT-4o
+- **Authentication**: Appwrite auth (when enabled)
+
+### **Development Tools**
+- **Linting**: ESLint with Next.js config
+- **Formatting**: Prettier (recommended)
+- **Type Checking**: TypeScript compiler
+- **Package Manager**: npm
+- **Version Control**: Git with GitHub
+
+## 📁 **Project Structure**
+
+```
+zeropoint-labs-hostinger/
+├── src/
+│   ├── app/                 # Next.js App Router
+│   ├── components/          # React components
+│   ├── lib/                 # Utility libraries
+│   ├── services/            # API services
+│   └── data/               # Static data
+├── public/                 # Static assets
+├── docs/                   # Documentation
+├── scripts/                # Build and deployment scripts
+├── docker-compose.yml      # Docker configuration
+├── Dockerfile             # Container definition
+└── deploy.sh              # Deployment script
+```
+
+## 🎯 **Development Environment**
+
+### **Local Setup Requirements**
+- **Node.js**: Version 18+ (LTS recommended)
+- **npm**: Comes with Node.js
+- **Git**: For version control
+- **Code Editor**: VS Code recommended
+- **Terminal**: Command line access
+
+### **Recommended VS Code Extensions**
+- ES7+ React/Redux/React-Native snippets
+- Tailwind CSS IntelliSense
+- TypeScript and JavaScript Language Features
+- Prettier - Code formatter
+- GitLens — Git supercharged
+
+## 🔧 **Common Development Commands**
+
+### **Local Development**
+```bash
+npm run dev          # Start development server
+npm run build        # Build for production
+npm run start        # Start production server
+npm run lint         # Run ESLint
+npm run type-check   # TypeScript type checking
+```
+
+### **Docker Development**
+```bash
+docker-compose up --build    # Build and run containers
+docker-compose logs -f       # View logs
+docker-compose down          # Stop containers
+docker-compose restart       # Restart services
+```
+
+### **Git Workflow**
+```bash
+git status                   # Check file changes
+git add .                    # Stage all changes
+git commit -m "message"      # Commit with message
+git push origin master       # Push to remote
+git pull origin master       # Pull latest changes
+```
+
+## 🚀 **Deployment Process**
+
+### **Automated Deployment**
+```bash
+# On VPS
+./deploy.sh
+```
+
+### **Manual Deployment Steps**
+```bash
+# 1. Pull latest code
+git pull origin master
+
+# 2. Install dependencies
+npm ci
+
+# 3. Build application
 npm run build
 
-# Quick commit and push
-git add . && git commit -m "Quick update" && git push
+# 4. Restart containers
+docker-compose up --build -d
 ```
 
-### VPS Deployment:
+## 🔍 **Troubleshooting Development Issues**
+
+### **Common Problems**
+
+1. **Build Errors**
+   - Check TypeScript errors: `npm run type-check`
+   - Verify dependencies: `npm install`
+   - Clear Next.js cache: `rm -rf .next`
+
+2. **Environment Variables**
+   - Ensure `.env.local` exists
+   - Check variable names and syntax
+   - Restart development server
+
+3. **Docker Issues**
+   - Check container status: `docker-compose ps`
+   - View logs: `docker-compose logs -f`
+   - Rebuild containers: `docker-compose up --build`
+
+4. **Git Problems**
+   - Check branch: `git branch -a`
+   - Resolve conflicts manually
+   - Force push (careful): `git push --force`
+
+### **Debug Commands**
 ```bash
-# SSH to VPS
-ssh root@YOUR_VPS_IP
+# Check Node.js version
+node --version
 
-# Navigate and deploy
-cd /var/www/zeropoint-labs/zeropoint-hostinger && git pull && ./deploy.sh
+# Check npm version
+npm --version
 
-# Check status
-docker-compose ps
+# Verify environment variables
+echo $NODE_ENV
 
-# View logs
-docker-compose logs -f
+# Check file permissions
+ls -la .env.local
+
+# Docker container logs
+docker logs container_name
 ```
 
-## 🔍 Testing & Quality Assurance
+## 📊 **Performance Optimization**
 
-### Local Testing (Optional but Recommended):
-1. **Development Server**: `npm run dev` - Test at http://localhost:3000
-2. **Build Test**: `npm run build` - Ensure production build works
-3. **Lint Check**: `npm run lint` - Check for code issues
-
-### Production Verification:
-1. **Website Access**: Visit https://your-domain.com
-2. **HTTPS Check**: Ensure SSL certificate is working
-3. **Functionality Test**: Test key features and pages
-4. **Mobile Check**: Verify responsive design
-
-### Automated Checks:
-- **Docker Health Checks**: Automatic container monitoring
-- **Nginx Status**: Web server health monitoring
-- **SSL Monitoring**: Certificate expiration tracking
-
-## 📊 Development Timeline
-
-| Task Type | Local Time | Deploy Time | Total Time |
-|-----------|------------|-------------|------------|
-| **Text Changes** | 1-2 min | 2-3 min | 3-5 min |
-| **Style Updates** | 2-5 min | 2-3 min | 4-8 min |
-| **Component Changes** | 5-15 min | 2-3 min | 7-18 min |
-| **Major Features** | 30+ min | 2-3 min | 32+ min |
-
-## 🎯 Best Practices
-
-### 1. Commit Messages
-```bash
-# Good examples:
-git commit -m "Update pricing section with new plans"
-git commit -m "Fix mobile navigation menu"
-git commit -m "Add contact form validation"
-
-# Avoid:
-git commit -m "updates"
-git commit -m "fix stuff"
-```
-
-### 2. Testing Strategy
-- **Small Changes**: Deploy directly (text, simple styling)
-- **Medium Changes**: Test locally first (components, functionality)
-- **Large Changes**: Thorough local testing + staging environment
-
-### 3. Backup Strategy
-```bash
-# Create backup branch before major changes
-git checkout -b backup-before-major-update
-git checkout main
-# Make changes...
-```
-
-### 4. Monitoring
-- **Check logs** after deployment: `docker-compose logs -f`
-- **Monitor resource usage**: `docker stats`
-- **Verify website functionality** after updates
-
-## 🚨 Troubleshooting Development Issues
-
-### Common Local Issues:
-1. **Node.js Version**: Ensure Node 18+ is installed
-2. **Dependencies**: Run `npm install` if packages are missing
-3. **Port Conflicts**: Kill processes using port 3000
-4. **Build Errors**: Check syntax and import statements
-
-### Common Deployment Issues:
-1. **Git Push Fails**: Check repository permissions
-2. **Docker Build Fails**: Check available disk space
-3. **Website Not Updating**: Force rebuild with `--no-cache`
-4. **SSL Issues**: Verify domain DNS configuration
-
-### Debug Commands:
-```bash
-# Local debugging
-npm run build  # Check for build errors
-npm run lint   # Check for code issues
-
-# Production debugging
-docker-compose logs        # Check container logs
-docker system df          # Check disk usage
-docker-compose ps         # Check container status
-```
-
-## 🔄 Advanced Workflows
-
-### Feature Branch Workflow:
-```bash
-# Create feature branch
-git checkout -b new-feature
-
-# Make changes and test
-# ... development work ...
-
-# Merge to main
-git checkout main
-git merge new-feature
-git push
-```
-
-### Hotfix Workflow:
-```bash
-# Quick fix for urgent issues
-git add .
-git commit -m "Hotfix: urgent issue description"
-git push
-
-# Deploy immediately
-ssh root@VPS_IP "cd /var/www/zeropoint-labs/zeropoint-hostinger && git pull && ./deploy.sh"
-```
-
-### Rollback Workflow:
-```bash
-# If something goes wrong, rollback
-git log --oneline  # Find previous commit
-git reset --hard COMMIT_HASH
-git push --force
-
-# Deploy previous version
-ssh root@VPS_IP "cd /var/www/zeropoint-labs/zeropoint-hostinger && git pull && ./deploy.sh"
-```
-
-## 📈 Performance Optimization
-
-### Development Performance:
-- **Fast Refresh**: Next.js hot reloading for quick development
-- **Incremental Builds**: Only rebuild changed components
+### **Development Performance**
+- **Fast Refresh**: Hot reloading in development
 - **TypeScript**: Type checking for fewer runtime errors
+- **ESLint**: Code quality and consistency
+- **Source Maps**: Better debugging experience
 
-### Deployment Performance:
-- **Docker Layer Caching**: Faster subsequent builds
-- **Multi-stage Builds**: Optimized production images
-- **Nginx Caching**: Static asset optimization
+### **Production Optimization**
+- **Code Splitting**: Automatic with Next.js
+- **Image Optimization**: Next.js Image component
+- **Bundle Analysis**: Analyze build output
+- **Performance Monitoring**: Core Web Vitals
 
-## 📚 Additional Resources
+## 🔒 **Security Best Practices**
 
-### Next.js Documentation:
-- [Next.js Docs](https://nextjs.org/docs)
-- [React Documentation](https://react.dev/)
-- [Tailwind CSS](https://tailwindcss.com/docs)
+### **Development Security**
+- **Environment Variables**: Never commit sensitive data
+- **Dependencies**: Regular security audits with `npm audit`
+- **HTTPS**: Use HTTPS in all environments
+- **Access Control**: Limit access to development resources
 
-### Development Tools:
-- [VS Code](https://code.visualstudio.com/)
-- [Git Documentation](https://git-scm.com/doc)
-- [Docker Documentation](https://docs.docker.com/)
+### **Code Security**
+- **Input Validation**: Validate all user inputs
+- **SQL Injection**: Use parameterized queries
+- **XSS Protection**: Sanitize user content
+- **Authentication**: Implement proper auth flows
+
+## 📈 **Development Metrics**
+
+### **Code Quality**
+- TypeScript coverage
+- ESLint error count
+- Test coverage (when implemented)
+- Bundle size analysis
+
+### **Performance Metrics**
+- Build time
+- Hot reload speed
+- Development server startup time
+- Memory usage during development
+
+## 🎯 **Success Criteria**
+
+A well-configured development environment should have:
+- ✅ Fast development server startup
+- ✅ Hot reloading working properly
+- ✅ No TypeScript or ESLint errors
+- ✅ Environment variables loaded correctly
+- ✅ Git workflow functioning smoothly
+- ✅ Docker containers running properly
+
+## 📚 **Additional Resources**
+
+### **Official Documentation**
+- [Next.js Documentation](https://nextjs.org/docs)
+- [React Documentation](https://react.dev)
+- [TypeScript Documentation](https://www.typescriptlang.org/docs)
+- [Tailwind CSS Documentation](https://tailwindcss.com/docs)
+
+### **Best Practices**
+- [Next.js Best Practices](https://nextjs.org/docs/pages/building-your-application/optimizing)
+- [React Best Practices](https://react.dev/learn/thinking-in-react)
+- [TypeScript Best Practices](https://www.typescriptlang.org/docs/handbook/2/everyday-types.html)
 
 ---
 
-**Ready to start developing?** Begin with [UPDATE_WORKFLOW.md](./UPDATE_WORKFLOW.md) for the complete development workflow.
+**Ready to start developing?** Follow the [UPDATE_WORKFLOW.md](./UPDATE_WORKFLOW.md) for the standard development process, or set up Node.js on VPS using [INSTALL_NODEJS_VPS.md](./INSTALL_NODEJS_VPS.md).

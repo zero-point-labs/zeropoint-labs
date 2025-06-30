@@ -1,363 +1,257 @@
-# Reference Documentation
+# 📚 Reference Documentation
 
-This folder contains quick reference materials, cheat sheets, and emergency commands for the Zero Point Labs website.
+This section contains quick reference materials, technical specifications, and emergency command references.
 
-## 📋 Available References
+## 📋 **Available References**
 
-### ⚡ [QUICK_REFERENCE.md](./QUICK_REFERENCE.md)
-**Emergency Commands & Quick Setup Guide**
+### **Quick References**
+- **[QUICK_REFERENCE.md](./QUICK_REFERENCE.md)** - Emergency commands and quick setup checklist
 
-A condensed reference guide containing essential commands and procedures for quick access during emergencies or setup. This guide covers:
+## 🎯 **Quick Access**
 
-- **Emergency Commands**: Critical commands for troubleshooting
-- **Quick Setup Checklist**: Step-by-step deployment verification
-- **Troubleshooting Commands**: Debug and diagnostic tools
-- **Success Verification**: How to confirm everything is working
-- **Contact Information**: Where to get help when stuck
-
-**Use this guide for**: Emergency situations, quick troubleshooting, and setup verification.
-
-**Time required**: Immediate reference (1-5 minutes)
-
----
-
-## 🚨 Emergency Quick Reference
-
-### Critical Commands
-
-#### Check System Status:
+### **Emergency Commands**
+For when things go wrong and you need immediate solutions:
 ```bash
-# Check if containers are running
+# Check service status
 docker-compose ps
 
-# View all logs
+# View logs
 docker-compose logs -f
 
-# Check specific service logs
-docker-compose logs -f nginx
-docker-compose logs -f zeropoint-website
-
-# Check system resources
-docker stats
-df -h
-free -h
-```
-
-#### Restart Services:
-```bash
-# Restart all services
+# Restart everything
 docker-compose restart
 
-# Restart specific service
-docker-compose restart nginx
-
-# Stop and start (full restart)
-docker-compose down && docker-compose up -d
-
-# Force rebuild and restart
+# Force rebuild
 docker-compose up --build -d
 ```
 
-#### Emergency Recovery:
+### **Common File Locations**
+- **Local Project**: `/Users/akyriakouu/Documents/Zero Point/Projects/zeropoint-labs-hostinger`
+- **VPS Project**: `/var/www/zeropoint-labs/zeropoint-hostinger`
+- **Environment**: `.env.local`
+- **Docker Config**: `docker-compose.yml`
+- **Deployment**: `deploy.sh`
+
+## 🔧 **Technical Specifications**
+
+### **System Requirements**
+- **VPS**: 2GB RAM minimum, 4GB recommended
+- **Storage**: 20GB+ available space
+- **Node.js**: Version 18+ (LTS)
+- **Docker**: Latest stable version
+- **Ports**: 80 (HTTP), 443 (HTTPS), 3000 (dev)
+
+### **Technology Stack**
+- **Frontend**: Next.js 15.3.3, React 19, TypeScript
+- **Styling**: Tailwind CSS, Framer Motion
+- **Backend**: Next.js API routes, Appwrite (optional)
+- **Infrastructure**: Docker, Nginx, Let's Encrypt SSL
+- **AI**: OpenAI GPT-4o integration
+
+## 🚨 **Emergency Procedures**
+
+### **Website Down**
+1. Check container status: `docker-compose ps`
+2. Restart services: `docker-compose restart`
+3. Check logs: `docker-compose logs -f`
+4. If still down: `docker-compose up --build -d`
+
+### **SSL Certificate Issues**
+1. Check certificate status: `docker-compose logs nginx`
+2. Renew certificates: `docker-compose exec nginx certbot renew`
+3. Restart nginx: `docker-compose restart nginx`
+
+### **Build Failures**
+1. Check disk space: `df -h`
+2. Clear old containers: `docker system prune`
+3. Force rebuild: `docker-compose build --no-cache`
+
+### **Git Issues**
+1. Force pull: `git reset --hard origin/master`
+2. Check branch: `git branch -a`
+3. Force push: `git push --force origin master`
+
+## 📊 **Environment Variables Reference**
+
+### **Required Variables**
 ```bash
-# If website is down - quick recovery
-cd /var/www/zeropoint-labs/zeropoint-hostinger
-git pull
+# OpenAI Integration
+OPENAI_API_KEY=sk-proj-your_api_key_here
+
+# Appwrite Database (optional)
+NEXT_PUBLIC_APPWRITE_ENDPOINT=https://your-domain.com/v1
+NEXT_PUBLIC_APPWRITE_PROJECT_ID=your-project-id
+APPWRITE_API_KEY=your-appwrite-api-key
+
+# Chatbot Configuration
+CHATBOT_SESSION_TIMEOUT=86400000
+```
+
+### **Docker Environment**
+```bash
+# Production settings
+NODE_ENV=production
+NEXT_TELEMETRY_DISABLED=1
+
+# Build arguments
+OPENAI_API_KEY=${OPENAI_API_KEY:-placeholder}
+```
+
+## 🔍 **Port Allocation**
+
+| Service | Port | Purpose | Access |
+|---------|------|---------|--------|
+| **Next.js** | 3000 | Main application | Internal |
+| **Nginx** | 80/443 | Web server/SSL | External |
+| **Appwrite** | 80 | Database API | Internal |
+| **MariaDB** | 3306 | Database | Internal |
+| **Redis** | 6379 | Cache | Internal |
+
+## 📁 **File Structure Reference**
+
+### **Critical Files**
+```
+├── .env.local                 # Environment variables
+├── docker-compose.yml         # Main containers
+├── docker-compose.appwrite.yml # Database containers
+├── Dockerfile                 # Container definition
+├── deploy.sh                  # Deployment script
+├── nginx.conf                 # Web server config
+└── package.json              # Dependencies
+```
+
+### **Source Code Structure**
+```
+src/
+├── app/
+│   ├── api/chat/             # Chatbot API routes
+│   ├── globals.css           # Global styles
+│   └── layout.tsx            # Root layout
+├── components/
+│   ├── sections/
+│   │   ├── ChatSection.tsx   # Chatbot component
+│   │   ├── HeroSection.tsx   # Homepage hero
+│   │   └── PricingSection.tsx # Pricing display
+│   └── ui/                   # Reusable UI components
+├── services/
+│   ├── openai.ts            # OpenAI integration
+│   ├── chatbot.ts           # Chatbot logic
+│   └── appwrite.ts          # Database client
+└── lib/
+    └── appwrite.ts          # Appwrite configuration
+```
+
+## 💾 **Backup & Recovery**
+
+### **Manual Backup**
+```bash
+# Database backup
+docker-compose exec mariadb mysqldump -u root -p appwrite > backup.sql
+
+# File backup
+tar -czf website-backup.tar.gz /var/www/zeropoint-labs/
+
+# Code backup (already in Git)
+git push origin master
+```
+
+### **Recovery Procedures**
+```bash
+# Restore from Git
+git pull origin master
 ./deploy.sh
 
-# If containers won't start
-docker system prune -f
-docker-compose up --build -d
+# Restore database
+docker-compose exec mariadb mysql -u root -p appwrite < backup.sql
 
-# If out of disk space
-docker system prune -a -f
-```
-
-### Network & SSL Issues:
-```bash
-# Check SSL certificate
-openssl x509 -in ssl/cert.pem -text -noout
-
-# Test website connectivity
-curl -I https://your-domain.com
-
-# Check nginx configuration
-docker exec zeropoint-nginx nginx -t
-
-# Reload nginx without restart
-docker exec zeropoint-nginx nginx -s reload
-```
-
-## 🔧 Troubleshooting Quick Reference
-
-### Common Issues & Solutions:
-
-#### 1. Website Not Loading
-```bash
-# Check if containers are running
-docker-compose ps
-
-# If containers are down
-docker-compose up -d
-
-# Check logs for errors
-docker-compose logs -f
-```
-
-#### 2. SSL Certificate Problems
-```bash
-# Check certificate files
-ls -la ssl/
-
-# Renew SSL certificate
-docker-compose stop nginx
-certbot renew
-# Copy new certificates
-cp /etc/letsencrypt/live/domain.com/fullchain.pem ssl/cert.pem
-cp /etc/letsencrypt/live/domain.com/privkey.pem ssl/key.pem
-docker-compose start nginx
-```
-
-#### 3. Out of Disk Space
-```bash
-# Check disk usage
-df -h
-
-# Clean Docker resources
-docker system prune -a -f
-
-# Clean logs
-truncate -s 0 /var/lib/docker/containers/*/*-json.log
-```
-
-#### 4. Memory Issues
-```bash
-# Check memory usage
-free -h
-
-# Check which containers use most memory
-docker stats
-
-# Restart to free memory
-docker-compose restart
-```
-
-#### 5. Git/Deployment Issues
-```bash
-# If git pull fails
-git reset --hard origin/main
-git pull
-
-# If deployment fails
+# Full system restore
 docker-compose down
-docker-compose build --no-cache
-docker-compose up -d
+docker-compose up --build -d
 ```
 
-## 📊 System Monitoring Reference
+## 🔐 **Security Reference**
 
-### Health Check Commands:
+### **Access Controls**
+- **SSH**: Key-based authentication only
+- **Firewall**: Ports 22, 80, 443 open
+- **SSL**: Let's Encrypt certificates
+- **Environment**: Sensitive variables in `.env.local`
+- **Git**: No secrets in repository
+
+### **Security Commands**
 ```bash
-# Overall system health
-docker-compose ps
-docker stats --no-stream
-df -h
-free -h
+# Check open ports
+netstat -tulpn
 
-# Website accessibility
-curl -I https://your-domain.com
-curl -I http://your-domain.com  # Should redirect to HTTPS
+# Check SSL certificate
+openssl x509 -in /etc/letsencrypt/live/domain/fullchain.pem -text -noout
 
-# SSL certificate validity
-echo | openssl s_client -servername your-domain.com -connect your-domain.com:443 2>/dev/null | openssl x509 -noout -dates
-```
+# Check firewall status
+ufw status
 
-### Performance Monitoring:
-```bash
-# Container resource usage
-docker stats
-
-# Disk usage by container
-docker system df
-
-# Network connectivity
-ping your-domain.com
-nslookup your-domain.com
-
-# Process monitoring
-htop
-ps aux | grep docker
-```
-
-## 🔄 Maintenance Quick Reference
-
-### Regular Maintenance Tasks:
-
-#### Daily Checks:
-```bash
-# Quick health check
-docker-compose ps && curl -I https://your-domain.com
-```
-
-#### Weekly Maintenance:
-```bash
 # Update system packages
 apt update && apt upgrade -y
+```
 
-# Clean Docker resources
-docker system prune -f
+## 📈 **Performance Monitoring**
+
+### **System Resources**
+```bash
+# Check resource usage
+docker stats
 
 # Check disk space
 df -h
+
+# Check memory usage
+free -h
+
+# Check CPU usage
+top
 ```
 
-#### Monthly Tasks:
+### **Application Performance**
 ```bash
-# SSL certificate check
-certbot certificates
-
-# Security updates
-apt update && apt upgrade -y
-
-# Backup verification
-ls -la /var/backups/
-```
-
-### Backup Commands:
-```bash
-# Create manual backup
-tar -czf backup-$(date +%Y%m%d).tar.gz /var/www/zeropoint-labs/
-
-# Database backup (if using AppWrite)
-docker exec appwrite-mariadb mysqldump -u appwrite -p appwrite > backup-db-$(date +%Y%m%d).sql
-```
-
-## 📋 Setup Verification Checklist
-
-### Post-Deployment Verification:
-- [ ] **Containers Running**: `docker-compose ps` shows all services up
-- [ ] **Website Accessible**: https://your-domain.com loads correctly
-- [ ] **HTTPS Redirect**: http://your-domain.com redirects to HTTPS
-- [ ] **SSL Certificate**: Valid and not expired
-- [ ] **Mobile Responsive**: Website works on mobile devices
-- [ ] **Performance**: Page loads in under 3 seconds
-
-### Security Verification:
-- [ ] **Firewall Active**: `ufw status` shows active with proper rules
-- [ ] **SSH Access**: Can connect via SSH
-- [ ] **SSL Grade**: A+ rating on SSL Labs test
-- [ ] **Headers**: Security headers present
-- [ ] **Ports**: Only necessary ports open (22, 80, 443)
-
-## 🆘 Emergency Contacts & Resources
-
-### When You Need Help:
-
-#### 1. Check Documentation First:
-- [Deployment Guide](../deployment/DEPLOYMENT_GUIDE.md)
-- [Update Workflow](../development/UPDATE_WORKFLOW.md)
-- [Database Setup](../database/APPWRITE_DATABASE_SETUP.md)
-
-#### 2. Common Error Solutions:
-- **502 Bad Gateway**: Container not running → `docker-compose up -d`
-- **SSL Errors**: Certificate expired → Renew SSL certificate
-- **Out of Space**: Clean Docker → `docker system prune -a -f`
-- **Can't Connect**: Check firewall → `ufw status`
-
-#### 3. External Resources:
-- [Docker Documentation](https://docs.docker.com/)
-- [Nginx Documentation](https://nginx.org/en/docs/)
-- [Let's Encrypt Help](https://letsencrypt.org/docs/)
-- [Hostinger Support](https://www.hostinger.com/help)
-
-## 🔍 Diagnostic Information
-
-### System Information Commands:
-```bash
-# System details
-uname -a
-lsb_release -a
-docker --version
-docker-compose --version
-
-# Network configuration
-ip addr show
-netstat -tlnp
-
-# Service status
-systemctl status docker
-systemctl status ufw
-```
-
-### Log Locations:
-```bash
-# Docker logs
-/var/lib/docker/containers/*/
-
-# Nginx logs (inside container)
-docker exec zeropoint-nginx ls /var/log/nginx/
-
-# System logs
-/var/log/syslog
-/var/log/auth.log
-```
-
-## 📈 Performance Benchmarks
-
-### Expected Performance:
-- **Page Load Time**: < 3 seconds
-- **SSL Handshake**: < 1 second
-- **Container Start Time**: < 30 seconds
-- **Memory Usage**: < 1GB total
-- **Disk Usage**: < 10GB for basic setup
-
-### Performance Testing:
-```bash
-# Test page load time
+# Check response times
 curl -w "@curl-format.txt" -o /dev/null -s https://your-domain.com
 
-# Create curl-format.txt:
-echo "     time_namelookup:  %{time_namelookup}\n
-        time_connect:  %{time_connect}\n
-     time_appconnect:  %{time_appconnect}\n
-    time_pretransfer:  %{time_pretransfer}\n
-       time_redirect:  %{time_redirect}\n
-  time_starttransfer:  %{time_starttransfer}\n
-                     ----------\n
-          time_total:  %{time_total}\n" > curl-format.txt
+# Monitor logs
+docker-compose logs -f --tail=100
+
+# Check build times
+time docker-compose build
 ```
 
-## 🎯 Quick Actions
+## 🎯 **Success Indicators**
 
-### Most Common Tasks:
+### **Healthy System**
+- ✅ All containers running: `docker-compose ps`
+- ✅ Website accessible: HTTP 200 responses
+- ✅ SSL certificate valid: No browser warnings
+- ✅ Logs clean: No error messages
+- ✅ Resources stable: <80% CPU/memory usage
 
-#### Deploy Updates:
-```bash
-ssh root@VPS_IP
-cd /var/www/zeropoint-labs/zeropoint-hostinger
-git pull && ./deploy.sh
-```
+### **Performance Targets**
+- **Page Load**: <2 seconds first load
+- **Response Time**: <500ms API responses
+- **Uptime**: >99.9% availability
+- **SSL Grade**: A+ rating
+- **Build Time**: <2 minutes deployment
 
-#### Restart Everything:
-```bash
-docker-compose restart
-```
+## 🆘 **Support Contacts**
 
-#### Check Status:
-```bash
-docker-compose ps && curl -I https://your-domain.com
-```
+### **Service Providers**
+- **Hosting**: Hostinger support
+- **Domain**: Domain registrar support
+- **SSL**: Let's Encrypt documentation
+- **OpenAI**: OpenAI API documentation
 
-#### View Logs:
-```bash
-docker-compose logs -f --tail=50
-```
-
-#### Clean Up Space:
-```bash
-docker system prune -f
-```
+### **Technical Resources**
+- **Next.js**: Official documentation and community
+- **Docker**: Docker Hub and documentation
+- **Nginx**: Official documentation
+- **Appwrite**: Official documentation and Discord
 
 ---
 
-**Need immediate help?** Use the emergency commands above, then consult the detailed guides in other documentation folders.
+**Need immediate help?** Start with [QUICK_REFERENCE.md](./QUICK_REFERENCE.md) for emergency commands and troubleshooting steps.
