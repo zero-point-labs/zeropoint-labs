@@ -32,7 +32,7 @@ docker volume rm $(docker volume ls -q | grep appwrite) 2>/dev/null || echo "No 
 
 # Step 3: Install compatible dependencies
 echo -e "${YELLOW}📦 Installing compatible Appwrite SDK...${NC}"
-npm install appwrite@13.0.1 node-appwrite@13.0.1
+npm install appwrite@13.0.1 node-appwrite@12.0.1
 
 # Step 4: Build Next.js application
 echo -e "${YELLOW}🏗️ Building Next.js application...${NC}"
