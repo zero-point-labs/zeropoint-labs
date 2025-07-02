@@ -1,45 +1,47 @@
 version: '3.8'
 
 services:
-  zeropoint-website:
+  # Next.js Application
+  nextjs-app:
     build:
       context: .
       dockerfile: Dockerfile
-      args:
-        - OPENAI_API_KEY=${OPENAI_API_KEY:-placeholder}
-    container_name: zeropoint-labs-website
+    container_name: zeropoint-labs-app
     restart: unless-stopped
-    ports:
-      - "3000:3000"
     environment:
       - NODE_ENV=production
-      - NEXT_TELEMETRY_DISABLED=1
-    env_file:
-      - .env.local
+      - PORT=3000
     networks:
-      - zeropoint-network
-    healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:3000"]
-      interval: 30s
-      timeout: 10s
-      retries: 3
-      start_period: 40s
+      - app-network
 
+  # Nginx Reverse Proxy
   nginx:
     image: nginx:alpine
-    container_name: zeropoint-nginx
+    container_name: zeropoint-labs-nginx
     restart: unless-stopped
     ports:
       - "80:80"
       - "443:443"
     volumes:
-      - ./nginx.conf:/etc/nginx/nginx.conf:ro
-      - ./ssl:/etc/nginx/ssl:ro
-    depends_on:
-      - zeropoint-website
+      - ./nginx/nginx.conf:/etc/nginx/nginx.conf
+      - ./nginx/default-http-only.conf:/etc/nginx/conf.d/default.conf
+      - ./certbot/conf:/etc/letsencrypt
+      - ./certbot/www:/var/www/certbot
     networks:
-      - zeropoint-network
+      - app-network
+    depends_on:
+      - nextjs-app
+
+  # Certbot for SSL
+  certbot:
+    image: certbot/certbot
+    container_name: zeropoint-labs-certbot
+    restart: unless-stopped
+    volumes:
+      - ./certbot/conf:/etc/letsencrypt
+      - ./certbot/www:/var/www/certbot
+    entrypoint: "/bin/sh -c 'trap exit TERM; while :; do certbot renew; sleep 12h & wait $${!}; done;'"
 
 networks:
-  zeropoint-network:
-    driver: bridge
+  app-network:
+    driver: bridge 

@@ -20,6 +20,7 @@ import {
   Sparkles
 } from "lucide-react";
 import { BorderBeam } from "@/components/magicui/border-beam";
+import { useTheme } from "@/lib/theme-context";
 
 const sectionVariants: Variants = {
   hidden: { opacity: 0 },
@@ -145,6 +146,7 @@ const pricingTiers = [
 const PricingCard = ({ tier, index }: { tier: typeof pricingTiers[0], index: number }) => {
   const cardRef = useRef(null);
   const isInView = useInView(cardRef, { once: true, margin: "-50px" });
+  const { theme } = useTheme();
 
   return (
     <motion.div
@@ -163,15 +165,23 @@ const PricingCard = ({ tier, index }: { tier: typeof pricingTiers[0], index: num
         </div>
       )}
       
-      <Card className={`h-full relative overflow-hidden ${
+      <Card className={`h-full relative overflow-hidden backdrop-blur-md rounded-2xl transition-all duration-300 hover:scale-[1.02] hover:shadow-2xl group ${
         tier.popular 
-          ? 'bg-gradient-to-b from-orange-500/5 via-neutral-900/90 to-neutral-900/90 border-orange-500/40 shadow-xl shadow-orange-500/10' 
-          : 'bg-neutral-900/50 border-neutral-700/50'
-      } backdrop-blur-md rounded-2xl transition-all duration-300 hover:scale-[1.02] hover:shadow-2xl group`}>
+          ? theme === 'light'
+            ? 'bg-gradient-to-b from-orange-50/80 via-white/90 to-white/90 border-orange-300/60 shadow-xl shadow-orange-200/30'
+            : 'bg-gradient-to-b from-orange-500/5 via-neutral-900/90 to-neutral-900/90 border-orange-500/40 shadow-xl shadow-orange-500/10'
+          : theme === 'light'
+            ? 'bg-white/80 border-slate-200/60 shadow-lg shadow-slate-200/20'
+            : 'bg-neutral-900/50 border-neutral-700/50'
+      }`}>
         
         {/* Background Glow Effect for Popular */}
         {tier.popular && (
-          <div className="absolute inset-0 bg-gradient-to-br from-orange-500/10 via-transparent to-transparent opacity-50 pointer-events-none" />
+          <div className={`absolute inset-0 bg-gradient-to-br opacity-50 pointer-events-none ${
+            theme === 'light'
+              ? 'from-orange-100/60 via-transparent to-transparent'
+              : 'from-orange-500/10 via-transparent to-transparent'
+          }`} />
         )}
         {tier.popular && (
           <BorderBeam
@@ -188,10 +198,10 @@ const PricingCard = ({ tier, index }: { tier: typeof pricingTiers[0], index: num
               <tier.icon className={`w-6 h-6 ${tier.color}`} />
             </div>
             <div>
-              <CardTitle className="text-xl font-bold text-slate-100">
+              <CardTitle className={`text-xl font-bold ${theme === 'light' ? 'text-slate-900' : 'text-slate-100'}`}>
                 {tier.name}
               </CardTitle>
-              <p className="text-sm text-slate-400 mt-1">
+              <p className={`text-sm mt-1 ${theme === 'light' ? 'text-slate-600' : 'text-slate-400'}`}>
                 {tier.description}
               </p>
             </div>
@@ -199,10 +209,10 @@ const PricingCard = ({ tier, index }: { tier: typeof pricingTiers[0], index: num
           
           <div className="mb-6">
             <div className="flex items-baseline gap-2">
-              <span className="text-3xl lg:text-4xl font-bold text-slate-100">
+              <span className={`text-3xl lg:text-4xl font-bold ${theme === 'light' ? 'text-slate-900' : 'text-slate-100'}`}>
                 {tier.price}
               </span>
-              <span className="text-slate-400 text-sm">
+              <span className={`text-sm ${theme === 'light' ? 'text-slate-600' : 'text-slate-400'}`}>
                 {tier.period}
               </span>
             </div>
@@ -222,7 +232,7 @@ const PricingCard = ({ tier, index }: { tier: typeof pricingTiers[0], index: num
                 <div className={`flex-shrink-0 w-5 h-5 rounded-full ${tier.bgColor} border ${tier.borderColor} flex items-center justify-center`}>
                   <Check className={`w-3 h-3 ${tier.color}`} />
                 </div>
-                <span className="text-slate-300">{feature}</span>
+                <span className={theme === 'light' ? 'text-slate-700' : 'text-slate-300'}>{feature}</span>
               </motion.li>
             ))}
           </ul>
@@ -230,11 +240,13 @@ const PricingCard = ({ tier, index }: { tier: typeof pricingTiers[0], index: num
           <Link href={tier.id === "enterprise" ? "/contact" : "/start-project"}>
             <Button
               size="lg"
-              className={`w-full group ${
+              className={`w-full group transition-all duration-300 font-semibold py-3 ${
                 tier.popular 
-                  ? tier.buttonColor + " shadow-lg shadow-orange-500/25"
-                  : tier.buttonColor
-              } transition-all duration-300 font-semibold py-3`}
+                  ? "bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-400 hover:to-orange-500 text-white shadow-lg shadow-orange-500/25"
+                  : theme === 'light'
+                    ? `border ${tier.borderColor} ${tier.color} hover:bg-orange-50 hover:border-orange-400`
+                    : tier.buttonColor
+              }`}
               variant={tier.popular ? "default" : "outline"}
             >
               <span className="flex items-center justify-center">
@@ -252,14 +264,23 @@ const PricingCard = ({ tier, index }: { tier: typeof pricingTiers[0], index: num
 export default function PricingSection() {
   const sectionRef = useRef(null);
   const isInView = useInView(sectionRef, { once: true, margin: "-100px" });
+  const { theme } = useTheme();
 
   return (
     <section 
       ref={sectionRef}
-      className="relative w-full py-20 md:py-32 px-4 md:px-8 bg-[#0A0A0A] text-slate-100 overflow-hidden"
+      className={`relative w-full py-20 md:py-32 px-4 md:px-8 overflow-hidden ${
+        theme === 'light'
+          ? 'bg-gradient-to-br from-slate-50 via-white to-slate-100 text-slate-900'
+          : 'bg-[#0A0A0A] text-slate-100'
+      }`}
     >
       {/* Background Pattern */}
-      <div className="absolute inset-0 bg-[linear-gradient(to_right,#1f2937_1px,transparent_1px),linear-gradient(to_bottom,#1f2937_1px,transparent_1px)] bg-[size:6rem_6rem] [mask-image:radial-gradient(ellipse_80%_50%_at_50%_0%,#000_60%,transparent_100%)] opacity-10" />
+      <div className={`absolute inset-0 bg-[linear-gradient(to_right,${
+        theme === 'light' ? '#e2e8f0' : '#1f2937'
+      }_1px,transparent_1px),linear-gradient(to_bottom,${
+        theme === 'light' ? '#e2e8f0' : '#1f2937'
+      }_1px,transparent_1px)] bg-[size:6rem_6rem] [mask-image:radial-gradient(ellipse_80%_50%_at_50%_0%,#000_60%,transparent_100%)] opacity-10`} />
       
       <div className="container mx-auto max-w-7xl relative z-10">
         {/* Section Header */}
@@ -270,24 +291,34 @@ export default function PricingSection() {
           className="text-center mb-12 md:mb-20"
         >
           <motion.div variants={itemVariants} className="flex items-center justify-center gap-3 mb-4 md:mb-6">
-            <div className="w-8 h-8 md:w-10 md:h-10 bg-orange-500/15 border border-orange-500/30 rounded-xl flex items-center justify-center">
+            <div className={`w-8 h-8 md:w-10 md:h-10 border rounded-xl flex items-center justify-center ${
+              theme === 'light'
+                ? 'bg-orange-100/60 border-orange-200/60'
+                : 'bg-orange-500/15 border-orange-500/30'
+            }`}>
               <BarChart3 className="w-4 h-4 md:w-5 md:h-5 text-orange-400" />
             </div>
-            <Badge className="border-orange-500/50 text-orange-400 bg-orange-950/50 px-3 py-1 md:px-4 md:py-2 text-xs md:text-sm font-medium">
+            <Badge className={`border-orange-500/50 text-orange-400 px-3 py-1 md:px-4 md:py-2 text-xs md:text-sm font-medium ${
+              theme === 'light' ? 'bg-orange-50/80' : 'bg-orange-950/50'
+            }`}>
               Pricing
             </Badge>
           </motion.div>
           
           <motion.h2 
             variants={itemVariants} 
-            className="text-3xl md:text-4xl lg:text-6xl font-bold text-slate-100 mb-4 md:mb-6"
+            className={`text-3xl md:text-4xl lg:text-6xl font-bold mb-4 md:mb-6 ${
+              theme === 'light' ? 'text-slate-900' : 'text-slate-100'
+            }`}
           >
             Simple, <span className="text-orange-500">Transparent</span> Pricing
           </motion.h2>
           
           <motion.p 
             variants={itemVariants}
-            className="text-lg md:text-xl lg:text-2xl text-slate-300/80 max-w-3xl mx-auto leading-relaxed"
+            className={`text-lg md:text-xl lg:text-2xl max-w-3xl mx-auto leading-relaxed ${
+              theme === 'light' ? 'text-slate-600' : 'text-slate-300/80'
+            }`}
           >
             Choose the perfect plan for your project. No hidden fees, no surprises.
           </motion.p>
@@ -313,17 +344,29 @@ export default function PricingSection() {
           className="mt-12 md:mt-16 text-center"
         >
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-4xl mx-auto">
-            <div className="flex items-center justify-center gap-3 p-4 rounded-lg bg-neutral-800/30 border border-neutral-700/50">
+            <div className={`flex items-center justify-center gap-3 p-4 rounded-lg border ${
+              theme === 'light'
+                ? 'bg-white/60 border-slate-200/50'
+                : 'bg-neutral-800/30 border-neutral-700/50'
+            }`}>
               <MessageCircle className="w-5 h-5 text-orange-400" />
-              <span className="text-slate-300 text-sm">Free consultation included</span>
+              <span className={`text-sm ${theme === 'light' ? 'text-slate-700' : 'text-slate-300'}`}>Free consultation included</span>
             </div>
-            <div className="flex items-center justify-center gap-3 p-4 rounded-lg bg-neutral-800/30 border border-neutral-700/50">
+            <div className={`flex items-center justify-center gap-3 p-4 rounded-lg border ${
+              theme === 'light'
+                ? 'bg-white/60 border-slate-200/50'
+                : 'bg-neutral-800/30 border-neutral-700/50'
+            }`}>
               <Mail className="w-5 h-5 text-orange-400" />
-              <span className="text-slate-300 text-sm">Email support included</span>
+              <span className={`text-sm ${theme === 'light' ? 'text-slate-700' : 'text-slate-300'}`}>24/7 priority support</span>
             </div>
-            <div className="flex items-center justify-center gap-3 p-4 rounded-lg bg-neutral-800/30 border border-neutral-700/50">
+            <div className={`flex items-center justify-center gap-3 p-4 rounded-lg border ${
+              theme === 'light'
+                ? 'bg-white/60 border-slate-200/50'
+                : 'bg-neutral-800/30 border-neutral-700/50'
+            }`}>
               <Bot className="w-5 h-5 text-orange-400" />
-              <span className="text-slate-300 text-sm">AI integrations available</span>
+              <span className={`text-sm ${theme === 'light' ? 'text-slate-700' : 'text-slate-300'}`}>AI-powered optimizations</span>
             </div>
           </div>
           

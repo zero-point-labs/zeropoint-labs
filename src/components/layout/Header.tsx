@@ -4,67 +4,331 @@ import Image from 'next/image';
 import Link from 'next/link';
 // import { ShimmerButton } from '@/components/magicui/ShimmerButton'; // No longer using ShimmerButton here
 import { useState, useEffect, useRef } from 'react';
-import { motion, AnimatePresence, Variants } from 'framer-motion';
-import { Menu, X } from 'lucide-react';
+import { motion, AnimatePresence, Variants, useMotionValue, useTransform, useSpring } from 'framer-motion';
+import { Menu, X, Sparkles, ChevronRight, User, LogOut } from 'lucide-react';
+import { BorderBeam } from '@/components/magicui/border-beam';
+import { ThemeToggle } from '@/components/ui/theme-toggle';
+import { useTheme } from '@/lib/theme-context';
+import { useAuth } from '@/lib/auth-context';
 
-// Variants for the header hide/show animation
+// Enhanced variants with spring animations
 const headerVariants: Variants = {
-  visible: { y: 0, transition: { duration: 0.3, ease: "easeInOut" } },
-  hidden: { y: "-100%", transition: { duration: 0.3, ease: "easeInOut" } },
+  visible: { 
+    y: 0, 
+    opacity: 1,
+    transition: { 
+      duration: 0.5, 
+      ease: [0.25, 0.46, 0.45, 0.94],
+      opacity: { duration: 0.3 }
+    } 
+  },
+  hidden: { 
+    y: "-120%", 
+    opacity: 0,
+    transition: { 
+      duration: 0.4, 
+      ease: [0.25, 0.46, 0.45, 0.94],
+      opacity: { duration: 0.2 }
+    } 
+  },
+};
+
+// Animated hamburger icon component
+const AnimatedHamburger = ({ isOpen, onClick }: { isOpen: boolean; onClick: () => void }) => {
+  const { theme } = useTheme();
+  
+  return (
+    <button 
+      onClick={onClick}
+      className={`relative bg-transparent transition-all duration-300 rounded-lg w-10 h-10 flex items-center justify-center p-0 group ${
+        theme === 'dark' 
+          ? 'text-slate-300 hover:text-orange-400' 
+          : 'text-slate-600 hover:text-orange-500'
+      }`}
+      aria-label="Toggle Menu"
+    >
+      {/* Simple background on hover */}
+      <div className={`absolute inset-0 rounded-lg transition-all duration-300 ${
+        theme === 'dark'
+          ? 'group-hover:bg-white/5'
+          : 'group-hover:bg-black/5'
+      }`} />
+      
+      {/* Animated lines - cleaner and simpler */}
+      <div className="relative w-5 h-4 flex flex-col justify-between">
+        <motion.span 
+          className={`w-full h-[1.5px] rounded-full transition-colors duration-300 ${
+            theme === 'dark' ? 'bg-slate-300' : 'bg-slate-600'
+          } group-hover:bg-orange-500`}
+          animate={isOpen ? { rotate: 45, y: 6.5 } : { rotate: 0, y: 0 }}
+          transition={{ duration: 0.2, ease: "easeInOut" }}
+        />
+        <motion.span 
+          className={`w-full h-[1.5px] rounded-full transition-colors duration-300 ${
+            theme === 'dark' ? 'bg-slate-300' : 'bg-slate-600'
+          } group-hover:bg-orange-500`}
+          animate={isOpen ? { opacity: 0, scaleX: 0 } : { opacity: 1, scaleX: 1 }}
+          transition={{ duration: 0.15 }}
+        />
+        <motion.span 
+          className={`w-full h-[1.5px] rounded-full transition-colors duration-300 ${
+            theme === 'dark' ? 'bg-slate-300' : 'bg-slate-600'
+          } group-hover:bg-orange-500`}
+          animate={isOpen ? { rotate: -45, y: -6.5 } : { rotate: 0, y: 0 }}
+          transition={{ duration: 0.2, ease: "easeInOut" }}
+        />
+      </div>
+    </button>
+  );
+};
+
+// Enhanced menu item with hover effects
+const MenuItem = ({ href, label, onClick, delay }: { href: string; label: string; onClick: () => void; delay: number }) => {
+  const [isHovered, setIsHovered] = useState(false);
+  const { theme } = useTheme();
+  
+  return (
+    <motion.div
+      initial={{ opacity: 0, x: -40 }}
+      animate={{ opacity: 1, x: 0 }}
+      transition={{ delay, duration: 0.5, ease: [0.25, 0.46, 0.45, 0.94] }}
+      onHoverStart={() => setIsHovered(true)}
+      onHoverEnd={() => setIsHovered(false)}
+      className="relative"
+    >
+      <Link 
+        href={href} 
+        className={`relative flex items-center gap-3 text-xl font-light py-4 transition-all duration-300 tracking-wide group ${
+          theme === 'dark' 
+            ? 'text-slate-200 hover:text-orange-400' 
+            : 'text-slate-700 hover:text-orange-500'
+        }`}
+        onClick={onClick}
+      >
+        {/* Hover background */}
+        <motion.div
+          className="absolute -left-4 -right-4 top-0 bottom-0 bg-gradient-to-r from-orange-500/5 to-orange-600/5 rounded-lg"
+          initial={{ opacity: 0, scale: 0.95 }}
+          animate={{ opacity: isHovered ? 1 : 0, scale: isHovered ? 1 : 0.95 }}
+          transition={{ duration: 0.2 }}
+        />
+        
+        {/* Animated indicator */}
+        <motion.div
+          className="relative w-8 h-[2px] bg-gradient-to-r from-orange-400 to-orange-600 rounded-full"
+          initial={{ width: "8px" }}
+          animate={{ width: isHovered ? "24px" : "8px" }}
+          transition={{ duration: 0.3, ease: "easeOut" }}
+        />
+        
+        <span className="relative">{label}</span>
+        
+        {/* Arrow icon */}
+        <motion.div
+          initial={{ x: -5, opacity: 0 }}
+          animate={{ x: isHovered ? 0 : -5, opacity: isHovered ? 1 : 0 }}
+          transition={{ duration: 0.2 }}
+        >
+          <ChevronRight className="w-5 h-5 text-orange-400" />
+        </motion.div>
+      </Link>
+    </motion.div>
+  );
+};
+
+// Theme toggle menu item component
+const ThemeMenuItem = ({ onClick, delay }: { onClick: () => void; delay: number }) => {
+  const [isHovered, setIsHovered] = useState(false);
+  const { theme } = useTheme();
+  
+  return (
+    <motion.div
+      initial={{ opacity: 0, x: -40 }}
+      animate={{ opacity: 1, x: 0 }}
+      transition={{ delay, duration: 0.5, ease: [0.25, 0.46, 0.45, 0.94] }}
+      onHoverStart={() => setIsHovered(true)}
+      onHoverEnd={() => setIsHovered(false)}
+      className="relative"
+    >
+      <div className={`relative flex items-center gap-3 text-xl font-light py-4 transition-all duration-300 tracking-wide group ${
+        theme === 'dark' 
+          ? 'text-slate-200 hover:text-orange-400' 
+          : 'text-slate-700 hover:text-orange-500'
+      }`}>
+        {/* Hover background */}
+        <motion.div
+          className="absolute -left-4 -right-4 top-0 bottom-0 bg-gradient-to-r from-orange-500/5 to-orange-600/5 rounded-lg"
+          initial={{ opacity: 0, scale: 0.95 }}
+          animate={{ opacity: isHovered ? 1 : 0, scale: isHovered ? 1 : 0.95 }}
+          transition={{ duration: 0.2 }}
+        />
+        
+        {/* Animated indicator */}
+        <motion.div
+          className="relative w-8 h-[2px] bg-gradient-to-r from-orange-400 to-orange-600 rounded-full"
+          initial={{ width: "8px" }}
+          animate={{ width: isHovered ? "24px" : "8px" }}
+          transition={{ duration: 0.3, ease: "easeOut" }}
+        />
+        
+        <div className="relative flex items-center gap-3 flex-1">
+          <span>Theme</span>
+          <div className="ml-auto">
+            <ThemeToggle variant="icon" />
+          </div>
+        </div>
+      </div>
+    </motion.div>
+  );
+};
+
+// User menu item for authenticated users
+const UserMenuItem = ({ onClick, delay }: { onClick: () => void; delay: number }) => {
+  const [isHovered, setIsHovered] = useState(false);
+  const { theme } = useTheme();
+  const { user, isDemoMode, logout } = useAuth();
+  
+  const handleLogout = async () => {
+    await logout();
+    onClick(); // Close menu
+  };
+  
+  if (!user) return null;
+  
+  return (
+    <motion.div
+      initial={{ opacity: 0, x: -40 }}
+      animate={{ opacity: 1, x: 0 }}
+      transition={{ delay, duration: 0.5, ease: [0.25, 0.46, 0.45, 0.94] }}
+      onHoverStart={() => setIsHovered(true)}
+      onHoverEnd={() => setIsHovered(false)}
+      className="relative"
+    >
+      <div className={`relative transition-all duration-300 tracking-wide ${
+        theme === 'dark' 
+          ? 'text-slate-200' 
+          : 'text-slate-700'
+      }`}>
+        {/* Hover background */}
+        <motion.div
+          className="absolute -left-4 -right-4 top-0 bottom-0 bg-gradient-to-r from-orange-500/5 to-orange-600/5 rounded-lg"
+          initial={{ opacity: 0, scale: 0.95 }}
+          animate={{ opacity: isHovered ? 1 : 0, scale: isHovered ? 1 : 0.95 }}
+          transition={{ duration: 0.2 }}
+        />
+        
+        {/* User info */}
+        <div className="relative flex items-center gap-3 py-3">
+          <div className={`w-10 h-10 rounded-full flex items-center justify-center text-sm font-medium ${
+            isDemoMode 
+              ? 'bg-orange-500 text-white' 
+              : theme === 'dark'
+                ? 'bg-white/10 text-white'
+                : 'bg-black/10 text-black'
+          }`}>
+            {user.name.charAt(0).toUpperCase()}
+          </div>
+          <div className="flex-1 min-w-0">
+            <p className={`text-sm font-medium truncate ${
+              theme === 'dark' ? 'text-white' : 'text-black'
+            }`}>
+              {user.name}
+            </p>
+            <p className={`text-xs truncate ${
+              theme === 'dark' ? 'text-slate-400' : 'text-slate-600'
+            }`}>
+              {user.email}
+            </p>
+            {isDemoMode && (
+              <span className="inline-block px-2 py-0.5 text-xs bg-orange-500/20 text-orange-400 rounded-full mt-1">
+                Demo Mode
+              </span>
+            )}
+          </div>
+        </div>
+        
+        {/* Logout button */}
+        <div className="relative flex items-center gap-3 py-2">
+          <motion.div
+            className="relative w-8 h-[2px] bg-gradient-to-r from-orange-400 to-orange-600 rounded-full"
+            initial={{ width: "8px" }}
+            animate={{ width: isHovered ? "24px" : "8px" }}
+            transition={{ duration: 0.3, ease: "easeOut" }}
+          />
+          <button
+            onClick={handleLogout}
+            className={`text-sm transition-colors ${
+              theme === 'dark' 
+                ? 'text-slate-400 hover:text-orange-400' 
+                : 'text-slate-600 hover:text-orange-500'
+            }`}
+          >
+            <LogOut className="w-4 h-4 inline mr-2" />
+            Sign Out
+          </button>
+        </div>
+      </div>
+    </motion.div>
+  );
 };
 
 export default function Header() {
   const [isScrolled, setIsScrolled] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
-  const [isHeaderVisible, setIsHeaderVisible] = useState(true); // State for header visibility
-  const lastScrollYRef = useRef(0); // Ref for last scroll position
+  const [isHeaderVisible, setIsHeaderVisible] = useState(true);
+  const lastScrollYRef = useRef(0);
+  const { theme } = useTheme();
+  const { user, isLoading } = useAuth();
+  
+  // Mouse position tracking for gradient effect
+  const mouseX = useMotionValue(0);
+  const mouseY = useMotionValue(0);
+  
+  const gradientX = useTransform(mouseX, [0, 300], [0, 100]);
+  const gradientY = useTransform(mouseY, [0, 300], [0, 100]);
+  const springX = useSpring(gradientX, { stiffness: 300, damping: 30 });
+  const springY = useSpring(gradientY, { stiffness: 300, damping: 30 });
 
   useEffect(() => {
-    const headerHeight = 72; // Approx height md:h-18 (4.5rem = 72px)
-
     const handleScroll = () => {
       const currentScrollY = window.scrollY;
-
-      // Existing logic for background style
-      setIsScrolled(currentScrollY > 20);
-
-      // New logic for hide/show header
-      if (currentScrollY <= headerHeight) {
-        setIsHeaderVisible(true);
-      } else if (currentScrollY > lastScrollYRef.current) {
+      
+      // Header visibility logic
+      if (currentScrollY > lastScrollYRef.current && currentScrollY > 100) {
         setIsHeaderVisible(false);
       } else {
         setIsHeaderVisible(true);
       }
+      
+      // Scrolled state
+      setIsScrolled(currentScrollY > 50);
+      
       lastScrollYRef.current = currentScrollY;
     };
 
-    // Initialize ref on mount
-    lastScrollYRef.current = window.scrollY;
-    
     window.addEventListener('scroll', handleScroll, { passive: true });
     return () => window.removeEventListener('scroll', handleScroll);
-  }, []); // Empty dependency array ensures this runs only on mount and unmount
+  }, []);
 
+  // Close mobile menu when clicking outside or on escape
   useEffect(() => {
+    const handleEscape = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') setIsMobileMenuOpen(false);
+    };
+
     if (isMobileMenuOpen) {
+      document.addEventListener('keydown', handleEscape);
       document.body.style.overflow = 'hidden';
     } else {
       document.body.style.overflow = 'unset';
     }
+
     return () => {
+      document.removeEventListener('keydown', handleEscape);
       document.body.style.overflow = 'unset';
     };
   }, [isMobileMenuOpen]);
 
-  const mobileNavLinkClasses = "text-slate-100 hover:text-orange-400 text-2xl font-light py-4 transition-all duration-300 tracking-wide";
-
-  const menuVariants: Variants = {
-    hidden: { opacity: 0, x: -100 },
-    visible: { opacity: 1, x: 0, transition: { duration: 0.4, ease: [0.25, 0.46, 0.45, 0.94] } },
-    exit: { opacity: 0, x: -100, transition: { duration: 0.3, ease: [0.25, 0.46, 0.45, 0.94] } },
-  };
-  
   const navItems = [
     { href: "/services", label: "Services" },
     { href: "/portfolio", label: "Portfolio" },
@@ -72,128 +336,328 @@ export default function Header() {
     { href: "/contact", label: "Contact" },
   ];
 
-  const quoteButtonBaseClasses = 
-    "font-medium rounded-lg transition-all duration-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-orange-500 focus-visible:ring-offset-2 focus-visible:ring-offset-black";
-  const quoteButtonDesktopClasses = 
-    `px-5 py-2 text-sm text-orange-400 border border-orange-500/70 hover:bg-orange-500/10 hover:text-orange-300 hover:border-orange-400 ${quoteButtonBaseClasses}`;
-  const quoteButtonMenuClasses = 
-    `w-full py-3 text-base text-orange-400 border border-orange-500/70 hover:bg-orange-500/10 hover:text-orange-300 hover:border-orange-400 ${quoteButtonBaseClasses}`;
+  const handleMouseMove = (e: React.MouseEvent) => {
+    const rect = e.currentTarget.getBoundingClientRect();
+    mouseX.set(e.clientX - rect.left);
+    mouseY.set(e.clientY - rect.top);
+  };
+
+  // Dynamic header classes based on theme and scroll state
+  const getHeaderClasses = () => {
+    const baseClasses = "fixed top-0 z-50 w-full transition-all duration-700 ease-out h-16 md:h-20 flex items-center";
+    
+    if (theme === 'dark') {
+      return `${baseClasses} ${isScrolled 
+        ? 'bg-black/90 backdrop-blur-2xl shadow-2xl shadow-black/80 border-b border-white/5' 
+        : 'bg-black/60 backdrop-blur-xl'
+      }`;
+    } else {
+      return `${baseClasses} ${isScrolled 
+        ? 'header-light scrolled' 
+        : 'header-light'
+      }`;
+    }
+  };
+
+  // Dynamic mobile menu classes
+  const getMobileMenuClasses = () => {
+    const baseClasses = "fixed left-0 top-0 bottom-0 z-[100] w-80 md:w-96 backdrop-blur-2xl border-r";
+    
+    if (theme === 'dark') {
+      return `${baseClasses} bg-black/95 border-white/10`;
+    } else {
+      return `${baseClasses} mobile-menu-light border-black/10`;
+    }
+  };
+
+  // Render auth button based on user state
+  const renderAuthButton = () => {
+    if (isLoading) {
+      return (
+        <div className="w-20 h-10 bg-white/5 rounded-xl animate-pulse" />
+      );
+    }
+
+    if (user) {
+      // User is logged in - show Dashboard button
+      return (
+        <Link href="/dashboard" className="relative group">
+          <motion.div
+            className="relative px-6 py-2.5 text-sm font-medium rounded-xl overflow-hidden"
+            whileHover={{ scale: 1.05 }}
+            whileTap={{ scale: 0.95 }}
+          >
+            {/* Button gradient border */}
+            <div className="absolute inset-0 rounded-xl bg-gradient-to-r from-orange-500 via-orange-600 to-orange-500 p-[1px]">
+              <div className={`absolute inset-[1px] rounded-xl ${theme === 'dark' ? 'bg-black' : 'bg-white'}`} />
+            </div>
+            
+            {/* Button content */}
+            <span className="relative z-10 bg-gradient-to-r from-orange-400 to-orange-500 bg-clip-text text-transparent group-hover:from-orange-300 group-hover:to-orange-400 transition-all duration-300 flex items-center gap-2">
+              <User className="w-4 h-4 text-orange-500" />
+              Dashboard
+            </span>
+            
+            {/* Hover glow */}
+            <div className="absolute inset-0 rounded-xl bg-orange-500/0 group-hover:bg-orange-500/10 transition-all duration-300" />
+            
+            <BorderBeam size={60} duration={3} colorFrom="#fb923c" colorTo="#ea580c" />
+          </motion.div>
+        </Link>
+      );
+    } else {
+      // User is not logged in - show Sign Up button
+      return (
+        <Link href="/signup" className="relative group">
+          <motion.div
+            className="relative px-6 py-2.5 text-sm font-medium rounded-xl overflow-hidden"
+            whileHover={{ scale: 1.05 }}
+            whileTap={{ scale: 0.95 }}
+          >
+            {/* Button gradient border */}
+            <div className="absolute inset-0 rounded-xl bg-gradient-to-r from-orange-500 via-orange-600 to-orange-500 p-[1px]">
+              <div className={`absolute inset-[1px] rounded-xl ${theme === 'dark' ? 'bg-black' : 'bg-white'}`} />
+            </div>
+            
+            {/* Button content */}
+            <span className="relative z-10 bg-gradient-to-r from-orange-400 to-orange-500 bg-clip-text text-transparent group-hover:from-orange-300 group-hover:to-orange-400 transition-all duration-300">
+              Sign Up
+            </span>
+            
+            {/* Hover glow */}
+            <div className="absolute inset-0 rounded-xl bg-orange-500/0 group-hover:bg-orange-500/10 transition-all duration-300" />
+            
+            <BorderBeam size={60} duration={3} colorFrom="#fb923c" colorTo="#ea580c" />
+          </motion.div>
+        </Link>
+      );
+    }
+  };
+
+  // Render mobile auth button
+  const renderMobileAuthButton = () => {
+    if (isLoading) {
+      return (
+        <div className="w-full h-12 bg-white/5 rounded-xl animate-pulse" />
+      );
+    }
+
+    if (user) {
+      // User is logged in - show Dashboard button
+      return (
+        <Link href="/dashboard" onClick={() => setIsMobileMenuOpen(false)}>
+          <motion.div
+            className="relative w-full py-3.5 text-center rounded-xl overflow-hidden group"
+            whileHover={{ scale: 1.02 }}
+            whileTap={{ scale: 0.98 }}
+          >
+            {/* Animated gradient background */}
+            <div className="absolute inset-0 bg-gradient-to-r from-blue-500 via-blue-600 to-blue-500 opacity-90 group-hover:opacity-100 transition-opacity duration-300" />
+            
+            {/* Shimmer effect */}
+            <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-1000" />
+            
+            <span className="relative z-10 text-white font-semibold text-base flex items-center justify-center gap-2">
+              <User className="w-4 h-4" />
+              Dashboard
+            </span>
+          </motion.div>
+        </Link>
+      );
+    } else {
+      // User is not logged in - show Sign Up button
+      return (
+        <Link href="/signup" onClick={() => setIsMobileMenuOpen(false)}>
+          <motion.div
+            className="relative w-full py-3.5 text-center rounded-xl overflow-hidden group"
+            whileHover={{ scale: 1.02 }}
+            whileTap={{ scale: 0.98 }}
+          >
+            {/* Animated gradient background */}
+            <div className="absolute inset-0 bg-gradient-to-r from-orange-500 via-orange-600 to-orange-500 opacity-90 group-hover:opacity-100 transition-opacity duration-300" />
+            
+            {/* Shimmer effect */}
+            <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-1000" />
+            
+            <span className="relative z-10 text-white font-semibold text-base">Get Started</span>
+          </motion.div>
+        </Link>
+      );
+    }
+  };
 
   return (
     <>
-      <motion.header // Changed to motion.header
+      <motion.header
         variants={headerVariants}
         animate={isHeaderVisible ? "visible" : "hidden"}
         initial="visible"
-        className={`fixed top-0 z-50 w-full transition-all duration-500 ease-out h-16 md:h-18 flex items-center
-          ${isScrolled 
-            ? 'bg-black/95 backdrop-blur-xl shadow-2xl shadow-black/60' 
-            : 'bg-black/80 backdrop-blur-md'
-          }
-          before:absolute before:inset-0 before:bg-[radial-gradient(circle_at_50%_50%,rgba(255,255,255,0.02),transparent_70%)] before:pointer-events-none
-          after:absolute after:bottom-0 after:left-0 after:right-0 after:h-px after:bg-gradient-to-r after:from-transparent after:via-orange-500/20 after:to-transparent
-          supports-[backdrop-filter]:bg-opacity-90`}
+        onMouseMove={handleMouseMove}
+        className={getHeaderClasses()}
       >
-        <div className="container relative flex max-w-screen-2xl items-center justify-between px-6 md:px-8 h-full">
-          {/* Left Slot: Hamburger Menu Toggle */}
-          <div className="flex-shrink-0">
-            <button 
-              onClick={() => setIsMobileMenuOpen(true)}
-              className="bg-transparent text-slate-400 hover:text-orange-400 hover:bg-white/5 transition-all duration-300 rounded-lg w-10 h-10 border-0 flex items-center justify-center p-0"
-              aria-label="Toggle Menu"
-            >
-              <Menu className="h-5 w-5" strokeWidth={1.5} /> 
-            </button>
+        {/* Animated gradient background */}
+        <motion.div 
+          className={`absolute inset-0 ${theme === 'dark' ? 'opacity-50' : 'opacity-30'}`}
+          style={{
+            background: `radial-gradient(circle at ${springX}% ${springY}%, rgba(251, 146, 60, ${theme === 'dark' ? '0.15' : '0.08'}) 0%, transparent 50%)`,
+          }}
+        />
+        
+        {/* Top gradient line */}
+        <div className={`absolute top-0 left-0 right-0 h-[1px] bg-gradient-to-r from-transparent via-orange-500/50 to-transparent ${theme === 'light' ? 'opacity-60' : ''}`} />
+        
+        {/* Glass morphism overlay */}
+        <div className={`absolute inset-0 bg-gradient-to-b pointer-events-none ${
+          theme === 'dark' 
+            ? 'from-white/[0.02] to-transparent' 
+            : 'from-white/[0.4] to-transparent'
+        }`} />
+        
+        <div className="container relative flex max-w-screen-2xl items-center justify-between px-6 md:px-8 h-full w-full mx-auto">
+          {/* Left: Enhanced Hamburger */}
+          <div className="flex-shrink-0 w-12 flex justify-start">
+            <AnimatedHamburger isOpen={isMobileMenuOpen} onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)} />
           </div>
 
-          {/* Center Slot: Logo */}
-          <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2">
+          {/* Center: Enhanced Logo - Properly centered and responsive */}
+          <div className="flex-1 flex justify-center items-center">
             <Link href="/" className="flex items-center group">
-              <div className="relative">
+              <motion.div 
+                className="relative flex items-center justify-center"
+                whileHover={{ scale: 1.05 }}
+                transition={{ duration: 0.3, ease: "easeOut" }}
+              >
+                {/* Logo glow effect */}
+                <div className="absolute inset-0 bg-orange-500/20 blur-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+                
                 <Image
-                  src="/zeropoint-logo.png"
+                  src={theme === 'light' ? "/zeropoint-logo-black.png" : "/zeropoint-logo.png"}
                   alt="Zero Point Labs Logo"
-                  width={250}
-                  height={300}
-                  className="rounded-lg transition-all duration-300 group-hover:scale-105"
+                  width={280}
+                  height={320}
+                  className="relative rounded-lg transition-all duration-300 group-hover:brightness-110 w-auto h-8 sm:h-10 md:h-12 max-w-none"
+                  priority
                 />
-              </div>
+              </motion.div>
             </Link>
           </div>
           
-          {/* Right Slot: Get a Quote Button (Desktop) */}
-          <div className="flex-shrink-0 w-10 h-10 md:w-auto md:h-auto flex items-center justify-center">
+          {/* Right: Conditional Auth Button - Hidden on mobile, proper width to balance layout */}
+          <div className="flex-shrink-0 w-12 md:w-auto flex justify-end">
             <div className="hidden md:block">
-              <Link href="/get-a-quote" className={quoteButtonDesktopClasses}>
-                Get a Quote
-              </Link>
+              {renderAuthButton()}
             </div>
           </div>
         </div>
       </motion.header>
 
-      {/* Minimal Slide-out Menu */}
+      {/* Enhanced Slide-out Menu */}
       <AnimatePresence>
         {isMobileMenuOpen && (
           <>
-            {/* Backdrop */}
+            {/* Backdrop with blur */}
             <motion.div
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
               transition={{ duration: 0.3 }}
-              className="fixed inset-0 z-[90] bg-black/80 backdrop-blur-sm"
+              className={`fixed inset-0 z-[90] backdrop-blur-md ${
+                theme === 'dark' ? 'bg-black/60' : 'bg-white/60'
+              }`}
               onClick={() => setIsMobileMenuOpen(false)}
             />
             
-            {/* Slide-out Panel */}
+            {/* Enhanced Slide-out Panel */}
             <motion.div
-              variants={menuVariants}
-              initial="hidden"
-              animate="visible"
-              exit="exit"
-              className="fixed left-0 top-0 bottom-0 z-[100] w-80 bg-black/95 backdrop-blur-xl border-r border-white/10 p-8 flex flex-col"
+              initial={{ x: "-100%" }}
+              animate={{ x: 0 }}
+              exit={{ x: "-100%" }}
+              transition={{ duration: 0.5, ease: [0.25, 0.46, 0.45, 0.94] }}
+              className={getMobileMenuClasses()}
             >
-              <div className="flex items-center justify-between mb-12">
-                <div className="text-slate-100 font-light text-lg tracking-wide">Menu</div>
-                <button 
-                  onClick={() => setIsMobileMenuOpen(false)}
-                  className="text-slate-400 hover:text-orange-400 hover:bg-white/5 w-10 h-10 rounded-lg flex items-center justify-center p-0 border-0"
-                  aria-label="Close Menu"
-                >
-                  <X className="h-5 w-5" strokeWidth={1.5} />
-                </button>
-              </div>
+              {/* Gradient overlay */}
+              <div className={`absolute inset-0 bg-gradient-to-br from-orange-500/5 via-transparent to-orange-600/5 pointer-events-none ${
+                theme === 'light' ? 'opacity-60' : ''
+              }`} />
               
-              <nav className="flex flex-col space-y-2 flex-grow">
-                {navItems.map((item, index) => (
-                  <motion.div
-                    key={item.href}
-                    initial={{ opacity: 0, x: -20 }}
-                    animate={{ opacity: 1, x: 0 }}
-                    transition={{ delay: index * 0.1 + 0.2, duration: 0.3 }}
+              {/* Content */}
+              <div className="relative h-full flex flex-col p-8">
+                {/* Header */}
+                <div className="flex items-center justify-between mb-16">
+                  <motion.div 
+                    className="flex items-center gap-3"
+                    initial={{ opacity: 0, y: -20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: 0.1, duration: 0.4 }}
                   >
-                    <Link 
-                      href={item.href} 
-                      className={mobileNavLinkClasses} 
-                      onClick={() => setIsMobileMenuOpen(false)}
-                    >
-                      {item.label}
-                    </Link>
+                    <div className={`w-12 h-12 rounded-xl bg-gradient-to-br from-orange-500/20 to-orange-600/10 border border-orange-500/30 flex items-center justify-center ${
+                      theme === 'light' ? 'border-orange-500/50' : ''
+                    }`}>
+                      <Sparkles className="w-6 h-6 text-orange-400" />
+                    </div>
+                    <div>
+                      <div className={`font-medium text-lg ${
+                        theme === 'dark' ? 'text-slate-100' : 'text-slate-800'
+                      }`}>Navigation</div>
+                      <div className={`text-sm ${
+                        theme === 'dark' ? 'text-slate-500' : 'text-slate-600'
+                      }`}>Explore our services</div>
+                    </div>
                   </motion.div>
-                ))}
-              </nav>
+                  
+                  <motion.button 
+                    onClick={() => setIsMobileMenuOpen(false)}
+                    className={`w-10 h-10 rounded-xl flex items-center justify-center transition-all duration-300 group ${
+                      theme === 'dark' 
+                        ? 'text-slate-400 hover:text-orange-400 hover:bg-white/5' 
+                        : 'text-slate-600 hover:text-orange-500 hover:bg-black/5'
+                    }`}
+                    whileHover={{ scale: 1.05 }}
+                    whileTap={{ scale: 0.95 }}
+                  >
+                    <X className="h-5 w-5 group-hover:rotate-90 transition-transform duration-300" strokeWidth={1.5} />
+                  </motion.button>
+                </div>
+                
+                {/* Navigation items */}
+                <nav className="flex flex-col space-y-3 flex-grow">
+                  {navItems.map((item, index) => (
+                    <MenuItem
+                      key={item.href}
+                      href={item.href}
+                      label={item.label}
+                      onClick={() => setIsMobileMenuOpen(false)}
+                      delay={index * 0.1 + 0.2}
+                    />
+                  ))}
+                  
+                  {/* Theme Toggle Item */}
+                  <ThemeMenuItem
+                    onClick={() => setIsMobileMenuOpen(false)}
+                    delay={navItems.length * 0.1 + 0.2}
+                  />
 
-              <motion.div 
-                className="mt-auto pt-8"
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.6, duration: 0.3 }}
-              >
-                <Link href="/get-a-quote" className={quoteButtonMenuClasses} onClick={() => setIsMobileMenuOpen(false)}>
-                  Get a Quote
-                </Link>
-              </motion.div>
+                  {/* User Menu Item - Show if logged in */}
+                  {user && (
+                    <UserMenuItem
+                      onClick={() => setIsMobileMenuOpen(false)}
+                      delay={(navItems.length + 1) * 0.1 + 0.2}
+                    />
+                  )}
+                </nav>
+
+                {/* Bottom section with conditional auth button */}
+                <motion.div 
+                  className={`mt-auto pt-8 border-t ${
+                    theme === 'dark' ? 'border-white/10' : 'border-black/10'
+                  }`}
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 0.6, duration: 0.4 }}
+                >
+                  {renderMobileAuthButton()}
+                </motion.div>
+              </div>
             </motion.div>
           </>
         )}

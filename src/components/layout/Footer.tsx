@@ -21,6 +21,7 @@ import {
   Send
 } from 'lucide-react';
 import { BorderBeam } from '@/components/magicui/border-beam';
+import { useTheme } from '@/lib/theme-context';
 
 const sectionVariants: Variants = {
   hidden: { opacity: 0 },
@@ -54,6 +55,7 @@ export default function Footer() {
   const footerRef = useRef(null);
   const isInView = useInView(footerRef, { once: true, margin: "-100px" });
   const currentYear = new Date().getFullYear();
+  const { theme } = useTheme();
 
   const services = [
     { name: "Landing Pages", href: "/services/landing-pages", price: "€350" },
@@ -100,22 +102,34 @@ export default function Footer() {
   return (
     <footer 
       ref={footerRef}
-      className="relative w-full bg-[#0A0A0A] text-slate-100 overflow-hidden border-t border-neutral-800/50"
+      className={`relative w-full overflow-hidden border-t ${
+        theme === 'light'
+          ? 'bg-slate-50 text-slate-900 border-slate-200'
+          : 'bg-[#0A0A0A] text-slate-100 border-neutral-800/50'
+      }`}
     >
       {/* Background Pattern */}
-      <div className="absolute inset-0 bg-[linear-gradient(to_right,#1f2937_1px,transparent_1px),linear-gradient(to_bottom,#1f2937_1px,transparent_1px)] bg-[size:4rem_4rem] [mask-image:radial-gradient(ellipse_80%_50%_at_50%_100%,#000_60%,transparent_100%)] opacity-5" />
+      <div className={`absolute inset-0 bg-[linear-gradient(to_right,${
+        theme === 'light' ? '#e2e8f0' : '#1f2937'
+      }_1px,transparent_1px),linear-gradient(to_bottom,${
+        theme === 'light' ? '#e2e8f0' : '#1f2937'
+      }_1px,transparent_1px)] bg-[size:4rem_4rem] [mask-image:radial-gradient(ellipse_80%_50%_at_50%_100%,#000_60%,transparent_100%)] opacity-5`} />
       
       {/* Floating Elements */}
       <motion.div
         variants={floatingVariants}
         animate="animate"
-        className="absolute top-20 left-10 w-4 h-4 bg-orange-500/20 rounded-full blur-sm"
+        className={`absolute top-20 left-10 w-4 h-4 rounded-full blur-sm ${
+          theme === 'light' ? 'bg-orange-400/30' : 'bg-orange-500/20'
+        }`}
       />
       <motion.div
         variants={floatingVariants}
         animate="animate"
         style={{ animationDelay: "-2s" }}
-        className="absolute top-40 right-20 w-6 h-6 bg-orange-500/15 rounded-full blur-sm"
+        className={`absolute top-40 right-20 w-6 h-6 rounded-full blur-sm ${
+          theme === 'light' ? 'bg-orange-400/20' : 'bg-orange-500/15'
+        }`}
       />
 
       <div className="container mx-auto max-w-7xl relative z-10 px-4 md:px-8">
@@ -133,19 +147,25 @@ export default function Footer() {
                 <div className="space-y-4">
                   <div className="flex items-center gap-3">
                     <Image
-                      src="/zeropoint-logo.png"
+                      src={theme === 'light' ? "/zeropoint-logo-black.png" : "/zeropoint-logo.png"}
                       alt="Zero Point Labs"
                       width={40}
                       height={40}
                       className="rounded-lg"
                     />
                     <div>
-                      <h3 className="text-xl font-bold text-slate-100">Zero Point Labs</h3>
-                      <p className="text-sm text-slate-400">Crafting Digital Futures</p>
+                      <h3 className={`text-xl font-bold ${
+                        theme === 'light' ? 'text-slate-900' : 'text-slate-100'
+                      }`}>Zero Point Labs</h3>
+                      <p className={`text-sm ${
+                        theme === 'light' ? 'text-slate-600' : 'text-slate-400'
+                      }`}>Crafting Digital Futures</p>
                     </div>
                   </div>
                   
-                  <p className="text-slate-300/90 leading-relaxed max-w-md">
+                  <p className={`leading-relaxed max-w-md ${
+                    theme === 'light' ? 'text-slate-700' : 'text-slate-300/90'
+                  }`}>
                     We transform digital visions into reality with cutting-edge web development, 
                     AI solutions, and modern design. Based in Cyprus, serving clients worldwide.
                   </p>
@@ -153,15 +173,27 @@ export default function Footer() {
 
                 {/* Contact Info */}
                 <div className="space-y-3">
-                  <div className="flex items-center gap-3 text-slate-300">
-                    <div className="w-8 h-8 bg-orange-500/15 border border-orange-500/30 rounded-lg flex items-center justify-center">
+                  <div className={`flex items-center gap-3 ${
+                    theme === 'light' ? 'text-slate-700' : 'text-slate-300'
+                  }`}>
+                    <div className={`w-8 h-8 rounded-lg flex items-center justify-center ${
+                      theme === 'light' 
+                        ? 'bg-orange-100 border border-orange-200' 
+                        : 'bg-orange-500/15 border border-orange-500/30'
+                    }`}>
                       <MapPin className="w-4 h-4 text-orange-400" />
                     </div>
                     <span className="text-sm">Cyprus, European Union</span>
                   </div>
                   
-                  <div className="flex items-center gap-3 text-slate-300">
-                    <div className="w-8 h-8 bg-orange-500/15 border border-orange-500/30 rounded-lg flex items-center justify-center">
+                  <div className={`flex items-center gap-3 ${
+                    theme === 'light' ? 'text-slate-700' : 'text-slate-300'
+                  }`}>
+                    <div className={`w-8 h-8 rounded-lg flex items-center justify-center ${
+                      theme === 'light' 
+                        ? 'bg-orange-100 border border-orange-200' 
+                        : 'bg-orange-500/15 border border-orange-500/30'
+                    }`}>
                       <Mail className="w-4 h-4 text-orange-400" />
                     </div>
                     <a href="mailto:hello@zeropointlabs.com" className="text-sm hover:text-orange-400 transition-colors">
@@ -169,8 +201,14 @@ export default function Footer() {
                     </a>
                   </div>
                   
-                  <div className="flex items-center gap-3 text-slate-300">
-                    <div className="w-8 h-8 bg-orange-500/15 border border-orange-500/30 rounded-lg flex items-center justify-center">
+                  <div className={`flex items-center gap-3 ${
+                    theme === 'light' ? 'text-slate-700' : 'text-slate-300'
+                  }`}>
+                    <div className={`w-8 h-8 rounded-lg flex items-center justify-center ${
+                      theme === 'light' 
+                        ? 'bg-orange-100 border border-orange-200' 
+                        : 'bg-orange-500/15 border border-orange-500/30'
+                    }`}>
                       <Globe className="w-4 h-4 text-orange-400" />
                     </div>
                     <span className="text-sm">Available Worldwide</span>
@@ -185,7 +223,11 @@ export default function Footer() {
                       href={social.href}
                       target={social.href.startsWith('mailto:') ? '_self' : '_blank'}
                       rel="noopener noreferrer"
-                      className={`w-10 h-10 bg-neutral-800/50 border border-neutral-700/50 rounded-lg flex items-center justify-center transition-all duration-300 hover:bg-neutral-700/50 hover:border-orange-500/30 ${social.color} group`}
+                      className={`w-10 h-10 rounded-lg flex items-center justify-center transition-all duration-300 group ${social.color} ${
+                        theme === 'light'
+                          ? 'bg-white border border-slate-200 hover:bg-slate-50 hover:border-orange-300'
+                          : 'bg-neutral-800/50 border border-neutral-700/50 hover:bg-neutral-700/50 hover:border-orange-500/30'
+                      }`}
                       whileHover={{ scale: 1.05 }}
                       whileTap={{ scale: 0.95 }}
                     >
@@ -197,16 +239,22 @@ export default function Footer() {
 
               {/* Services - Spans 2 columns */}
               <motion.div variants={itemVariants} className="lg:col-span-2 space-y-4">
-                <h4 className="text-lg font-semibold text-slate-100 mb-4">Services</h4>
+                <h4 className={`text-lg font-semibold mb-4 ${
+                  theme === 'light' ? 'text-slate-900' : 'text-slate-100'
+                }`}>Services</h4>
                 <div className="space-y-3">
                   {services.map((service, index) => (
                     <div key={service.name} className="group">
                       <Link 
                         href={service.href}
-                        className="flex items-center justify-between text-slate-400 hover:text-orange-400 transition-colors duration-200"
+                        className={`flex items-center justify-between hover:text-orange-400 transition-colors duration-200 ${
+                          theme === 'light' ? 'text-slate-600' : 'text-slate-400'
+                        }`}
                       >
                         <span className="text-sm">{service.name}</span>
-                        <Badge variant="outline" className="text-xs border-orange-500/30 text-orange-400 bg-orange-500/5">
+                        <Badge variant="outline" className={`text-xs border-orange-500/30 text-orange-400 ${
+                          theme === 'light' ? 'bg-orange-50' : 'bg-orange-500/5'
+                        }`}>
                           {service.price}
                         </Badge>
                       </Link>
@@ -217,13 +265,17 @@ export default function Footer() {
 
               {/* Company - Spans 2 columns */}
               <motion.div variants={itemVariants} className="lg:col-span-2 space-y-4">
-                <h4 className="text-lg font-semibold text-slate-100 mb-4">Company</h4>
+                <h4 className={`text-lg font-semibold mb-4 ${
+                  theme === 'light' ? 'text-slate-900' : 'text-slate-100'
+                }`}>Company</h4>
                 <div className="space-y-3">
                   {company.map((item, index) => (
                     <Link 
                       key={item.name}
                       href={item.href}
-                      className="block text-sm text-slate-400 hover:text-orange-400 transition-colors duration-200"
+                      className={`block text-sm hover:text-orange-400 transition-colors duration-200 ${
+                        theme === 'light' ? 'text-slate-600' : 'text-slate-400'
+                      }`}
                     >
                       {item.name}
                     </Link>
@@ -233,10 +285,14 @@ export default function Footer() {
 
               {/* Resources - Spans 3 columns */}
               <motion.div variants={itemVariants} className="lg:col-span-3 space-y-6">
-                <h4 className="text-lg font-semibold text-slate-100">Stay Updated</h4>
+                <h4 className={`text-lg font-semibold ${
+                  theme === 'light' ? 'text-slate-900' : 'text-slate-100'
+                }`}>Stay Updated</h4>
                 
                 <div className="space-y-4">
-                  <p className="text-sm text-slate-400">
+                  <p className={`text-sm ${
+                    theme === 'light' ? 'text-slate-600' : 'text-slate-400'
+                  }`}>
                     Get the latest updates on web development trends, AI innovations, and our newest projects.
                   </p>
                   
@@ -244,7 +300,11 @@ export default function Footer() {
                     <input
                       type="email"
                       placeholder="Enter your email"
-                      className="flex-1 px-3 py-2 bg-neutral-800/50 border border-neutral-700/50 rounded-lg text-sm text-slate-100 placeholder:text-slate-500 focus:outline-none focus:border-orange-500/50 focus:bg-neutral-800/80 transition-all duration-200"
+                      className={`flex-1 px-3 py-2 rounded-lg text-sm focus:outline-none focus:border-orange-500/50 transition-all duration-200 ${
+                        theme === 'light'
+                          ? 'bg-white border border-slate-300 text-slate-900 placeholder:text-slate-500 focus:bg-white'
+                          : 'bg-neutral-800/50 border border-neutral-700/50 text-slate-100 placeholder:text-slate-500 focus:bg-neutral-800/80'
+                      }`}
                     />
                     <Button 
                       size="sm" 
@@ -256,12 +316,16 @@ export default function Footer() {
                 </div>
 
                 <div className="space-y-3">
-                  <h5 className="text-sm font-medium text-slate-300">Resources</h5>
+                  <h5 className={`text-sm font-medium ${
+                    theme === 'light' ? 'text-slate-700' : 'text-slate-300'
+                  }`}>Resources</h5>
                   {resources.map((resource, index) => (
                     <Link 
                       key={resource.name}
                       href={resource.href}
-                      className="block text-sm text-slate-400 hover:text-orange-400 transition-colors duration-200"
+                      className={`block text-sm hover:text-orange-400 transition-colors duration-200 ${
+                        theme === 'light' ? 'text-slate-600' : 'text-slate-400'
+                      }`}
                     >
                       {resource.name}
                     </Link>
@@ -272,9 +336,15 @@ export default function Footer() {
           </div>
 
           {/* CTA Section */}
-          <motion.div variants={itemVariants} className="py-8 border-t border-neutral-800/50">
+          <motion.div variants={itemVariants} className={`py-8 border-t ${
+            theme === 'light' ? 'border-slate-200' : 'border-neutral-800/50'
+          }`}>
             <div className="relative">
-              <div className="bg-gradient-to-r from-neutral-900/80 to-neutral-800/80 border border-orange-500/20 rounded-2xl p-6 md:p-8 backdrop-blur-sm overflow-hidden">
+              <div className={`rounded-2xl p-6 md:p-8 backdrop-blur-sm overflow-hidden border ${
+                theme === 'light'
+                  ? 'bg-gradient-to-r from-orange-50/80 to-white/80 border-orange-200/50'
+                  : 'bg-gradient-to-r from-neutral-900/80 to-neutral-800/80 border-orange-500/20'
+              }`}>
                 <BorderBeam
                   size={250}
                   duration={12}
@@ -287,9 +357,13 @@ export default function Footer() {
                   <div className="space-y-3">
                     <div className="flex items-center gap-2">
                       <Sparkles className="w-5 h-5 text-orange-400" />
-                      <h3 className="text-xl font-bold text-slate-100">Ready to Start Your Project?</h3>
+                      <h3 className={`text-xl font-bold ${
+                        theme === 'light' ? 'text-slate-900' : 'text-slate-100'
+                      }`}>Ready to Start Your Project?</h3>
                     </div>
-                    <p className="text-slate-300/90 leading-relaxed">
+                    <p className={`leading-relaxed ${
+                      theme === 'light' ? 'text-slate-700' : 'text-slate-300/90'
+                    }`}>
                       Let's bring your digital vision to life. From landing pages to complex web applications, 
                       we've got the expertise to make it happen.
                     </p>
@@ -298,7 +372,11 @@ export default function Footer() {
                   <div className="flex gap-3 md:justify-end">
                     <Button 
                       variant="outline" 
-                      className="border-orange-500/50 text-orange-400 hover:border-orange-400 hover:bg-orange-500/10"
+                      className={`text-orange-400 hover:border-orange-400 ${
+                        theme === 'light'
+                          ? 'border-orange-400 hover:bg-orange-50'
+                          : 'border-orange-500/50 hover:bg-orange-500/10'
+                      }`}
                       asChild
                     >
                       <Link href="/portfolio">
@@ -322,9 +400,13 @@ export default function Footer() {
           </motion.div>
 
           {/* Bottom Section */}
-          <motion.div variants={itemVariants} className="py-6 border-t border-neutral-800/30">
+          <motion.div variants={itemVariants} className={`py-6 border-t ${
+            theme === 'light' ? 'border-slate-200' : 'border-neutral-800/30'
+          }`}>
             <div className="flex flex-col md:flex-row justify-between items-center gap-4">
-              <div className="flex items-center gap-4 text-sm text-slate-400">
+              <div className={`flex items-center gap-4 text-sm ${
+                theme === 'light' ? 'text-slate-600' : 'text-slate-400'
+              }`}>
                 <span>&copy; {currentYear} Zero Point Labs. All rights reserved.</span>
                 <div className="hidden md:flex items-center gap-2">
                   <span>Made with</span>
@@ -334,13 +416,19 @@ export default function Footer() {
               </div>
               
               <div className="flex items-center gap-6 text-sm">
-                <Link href="/privacy" className="text-slate-400 hover:text-orange-400 transition-colors">
+                <Link href="/privacy" className={`hover:text-orange-400 transition-colors ${
+                  theme === 'light' ? 'text-slate-600' : 'text-slate-400'
+                }`}>
                   Privacy Policy
                 </Link>
-                <Link href="/terms" className="text-slate-400 hover:text-orange-400 transition-colors">
+                <Link href="/terms" className={`hover:text-orange-400 transition-colors ${
+                  theme === 'light' ? 'text-slate-600' : 'text-slate-400'
+                }`}>
                   Terms of Service
                 </Link>
-                <div className="flex items-center gap-2 text-slate-400">
+                <div className={`flex items-center gap-2 ${
+                  theme === 'light' ? 'text-slate-600' : 'text-slate-400'
+                }`}>
                   <Bot className="w-4 h-4 text-orange-400" />
                   <span>AI-Powered</span>
                 </div>
