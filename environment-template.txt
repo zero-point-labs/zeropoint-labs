@@ -1,0 +1,55 @@
+# GP.Realty Cyprus Environment Configuration Template
+# Use the commands below to create your .env file
+
+# Command to create .env file from this template:
+# cp environment-template.txt .env
+# Then edit the .env file with your actual values
+
+# ===============================================
+# ENVIRONMENT VARIABLES FOR .env FILE
+# ===============================================
+
+NODE_ENV=production
+PORT=3001
+NEXT_TELEMETRY_DISABLED=1
+
+# Domain Configuration
+DOMAIN=gprealty-cy.com
+APP_URL=https://gprealty-cy.com
+
+# Security (CHANGE THESE!)
+JWT_SECRET=your_jwt_secret_here_change_this_to_random_string
+SESSION_SECRET=your_session_secret_here_change_this_to_random_string
+
+# Database Configuration (uncomment if needed)
+# DATABASE_URL=postgresql://username:password@localhost:5432/gprealty_db
+# MONGODB_URI=mongodb://localhost:27017/gprealty
+
+# Email Configuration (uncomment if needed)
+# SMTP_HOST=smtp.gmail.com
+# SMTP_PORT=587
+# SMTP_USER=your_email@gmail.com
+# SMTP_PASS=your_app_password
+# FROM_EMAIL=noreply@gprealty-cy.com
+
+# API Keys (uncomment if needed)
+# GOOGLE_MAPS_API_KEY=your_google_maps_api_key
+# STRIPE_SECRET_KEY=sk_live_your_stripe_secret_key
+# STRIPE_PUBLISHABLE_KEY=pk_live_your_stripe_publishable_key
+
+# Cloud Storage (uncomment if needed)
+# AWS_ACCESS_KEY_ID=your_aws_access_key
+# AWS_SECRET_ACCESS_KEY=your_aws_secret_key
+# AWS_REGION=eu-west-1
+# S3_BUCKET=gprealty-assets
+
+# Analytics (uncomment if needed)
+# GOOGLE_ANALYTICS_ID=GA-XXXXXXXXX
+# FACEBOOK_PIXEL_ID=your_facebook_pixel_id
+
+# Logging
+LOG_LEVEL=info
+
+# Rate Limiting
+RATE_LIMIT_MAX=100
+RATE_LIMIT_WINDOW_MS=900000 
