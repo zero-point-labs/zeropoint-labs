@@ -158,6 +158,7 @@ export function CRMDashboard() {
   const [customizationMode, setCustomizationMode] = useState<'fields' | 'columns' | 'dashboard' | null>(null);
   const [editingCustomer, setEditingCustomer] = useState<Customer | null>(null);
   const [formData, setFormData] = useState<Record<string, any>>({});
+  const [expandedCustomer, setExpandedCustomer] = useState<number | null>(null);
 
   // Sync columns with fields whenever fields change
   useEffect(() => {
@@ -681,7 +682,148 @@ export function CRMDashboard() {
 
         {/* Dynamic Table View - Constrained Container */}
         <div className="w-full">
-          <div className="overflow-x-auto border border-border/30 rounded-lg">
+          {/* Mobile Card View */}
+          <div className="block lg:hidden space-y-3">
+            {filteredCustomers.map((customer, index) => (
+              <motion.div
+                key={customer.id}
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: index * 0.05 }}
+                className="rounded-lg border border-border/30 bg-background hover:bg-muted/20 transition-colors"
+              >
+                {/* Customer Header - Always Visible */}
+                <div 
+                  className="flex items-center justify-between p-4 cursor-pointer"
+                  onClick={() => setExpandedCustomer(expandedCustomer === customer.id ? null : customer.id)}
+                >
+                  <div className="flex items-center gap-3 flex-1 min-w-0">
+                    <div className="w-10 h-10 rounded-full bg-gradient-to-br from-blue-400 to-blue-600 flex items-center justify-center text-white text-sm font-medium flex-shrink-0">
+                      {customer.name ? customer.name.split(' ').map((n: string) => n[0]).join('').slice(0, 2) : '?'}
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <h3 className="font-medium text-foreground truncate">{customer.name || 'Unnamed Customer'}</h3>
+                      <div className="flex items-center gap-2 mt-1">
+                        <p className="text-sm text-muted-foreground truncate">
+                          {customer.email || customer.company || 'No contact info'}
+                        </p>
+                        {customer.status && (
+                          <Badge className={`${getStatusColor(customer.status)} text-xs px-2 py-0.5`}>
+                            {customer.status}
+                          </Badge>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-2 flex-shrink-0">
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        openEditModal(customer);
+                      }}
+                      className="h-8 w-8 p-0"
+                    >
+                      <Edit className="h-4 w-4" />
+                    </Button>
+                    <motion.div
+                      animate={{ rotate: expandedCustomer === customer.id ? 180 : 0 }}
+                      transition={{ duration: 0.2 }}
+                    >
+                      <ArrowDown className="h-4 w-4 text-muted-foreground" />
+                    </motion.div>
+                  </div>
+                </div>
+
+                {/* Expanded Details */}
+                <AnimatePresence>
+                  {expandedCustomer === customer.id && (
+                    <motion.div
+                      initial={{ height: 0, opacity: 0 }}
+                      animate={{ height: 'auto', opacity: 1 }}
+                      exit={{ height: 0, opacity: 0 }}
+                      transition={{ duration: 0.3 }}
+                      className="overflow-hidden"
+                    >
+                      <div className="px-4 pb-4 border-t border-border/30">
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-4">
+                          {visibleFields.map((field) => {
+                            const value = customer[field.id];
+                            if (!value && value !== 0 && value !== false) return null;
+                            
+                            return (
+                              <div key={field.id} className="space-y-1">
+                                <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
+                                  {field.label}
+                                </p>
+                                <div className="text-sm text-foreground">
+                                  {field.id === 'status' ? (
+                                    <Badge className={`${getStatusColor(value)} text-xs`}>
+                                      {value}
+                                    </Badge>
+                                  ) : (
+                                    <div className="break-words">
+                                      {formatValue(value, field.type)}
+                                    </div>
+                                  )}
+                                </div>
+                              </div>
+                            );
+                          })}
+                        </div>
+                        
+                        {/* Action Buttons */}
+                        <div className="flex items-center gap-2 mt-4 pt-4 border-t border-border/30">
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => openEditModal(customer)}
+                            className="flex-1"
+                          >
+                            <Edit className="h-4 w-4 mr-2" />
+                            Edit Customer
+                          </Button>
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              deleteCustomer(customer.id);
+                            }}
+                            className="text-red-500 hover:text-red-600 border-red-500/30 hover:bg-red-500/10"
+                          >
+                            <Trash2 className="h-4 w-4" />
+                          </Button>
+                        </div>
+                      </div>
+                    </motion.div>
+                  )}
+                </AnimatePresence>
+              </motion.div>
+            ))}
+            
+            {filteredCustomers.length === 0 && (
+              <div className="text-center py-8">
+                <Users className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
+                <p className="text-muted-foreground">
+                  {searchTerm ? 'No customers found matching your search.' : 'No customers yet.'}
+                </p>
+                {!searchTerm && (
+                  <Button 
+                    onClick={openAddModal}
+                    className="mt-4 bg-orange-500 hover:bg-orange-600 text-white"
+                  >
+                    <UserPlus className="h-4 w-4 mr-2" />
+                    Add Your First Customer
+                  </Button>
+                )}
+              </div>
+            )}
+          </div>
+
+          {/* Desktop Table View */}
+          <div className="hidden lg:block overflow-x-auto border border-border/30 rounded-lg">
             <div style={{ minWidth: visibleColumns.length > 4 ? `${visibleColumns.length * 150 + 130}px` : 'auto' }}>
               <table 
                 className="border-collapse bg-background w-full"
@@ -811,8 +953,17 @@ export function CRMDashboard() {
               <div className="text-center py-8">
                 <Users className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
                 <p className="text-muted-foreground">
-                  {searchTerm ? 'No customers found matching your search.' : 'No customers yet. Add your first customer!'}
+                  {searchTerm ? 'No customers found matching your search.' : 'No customers yet.'}
                 </p>
+                {!searchTerm && (
+                  <Button 
+                    onClick={openAddModal}
+                    className="mt-4 bg-orange-500 hover:bg-orange-600 text-white"
+                  >
+                    <UserPlus className="h-4 w-4 mr-2" />
+                    Add Your First Customer
+                  </Button>
+                )}
               </div>
             )}
           </div>

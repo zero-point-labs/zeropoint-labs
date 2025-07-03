@@ -77,6 +77,7 @@ export function CRMDashboardAppwrite() {
   const [customizationMode, setCustomizationMode] = useState<'fields' | 'columns' | 'dashboard' | null>(null);
   const [editingCustomer, setEditingCustomer] = useState<Customer | null>(null);
   const [formData, setFormData] = useState<Record<string, any>>({});
+  const [expandedCustomer, setExpandedCustomer] = useState<string | null>(null);
 
   // Get visible fields and columns
   const visibleFields = fields.filter(f => f.visible).sort((a, b) => (a.order || 0) - (b.order || 0));
@@ -592,145 +593,297 @@ export function CRMDashboardAppwrite() {
           </div>
         )}
 
-        {/* Dynamic Table View - Only show when not loading */}
+        {/* Customer List - Responsive Design */}
         {!loading && (
-          <div className="w-full">
-            <div className="overflow-x-auto border border-border/30 rounded-lg">
-              <div style={{ minWidth: visibleColumns.length > 4 ? `${visibleColumns.length * 150 + 130}px` : 'auto' }}>
-                <table 
-                  className="border-collapse bg-background w-full"
-                  style={{
-                    tableLayout: 'fixed',
-                    minWidth: '100%'
-                  }}
+          <>
+            {/* Mobile Card View */}
+            <div className="block lg:hidden space-y-3">
+              {filteredCustomers.map((customer, index) => (
+                <motion.div
+                  key={customer.$id}
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: index * 0.05 }}
+                  className="rounded-lg border border-border/30 bg-background hover:bg-muted/20 transition-colors"
                 >
-                  <thead>
-                    <tr className="border-b border-border/30 bg-muted/5">
-                      <th 
-                        className="text-left p-2 text-xs font-medium text-muted-foreground sticky left-0 bg-muted/5 z-10 border-r border-border/20" 
-                        style={{ width: '50px', minWidth: '50px' }}
+                  {/* Customer Header - Always Visible */}
+                  <div 
+                    className="flex items-center justify-between p-4 cursor-pointer"
+                    onClick={() => setExpandedCustomer(expandedCustomer === customer.$id ? null : customer.$id!)}
+                  >
+                    <div className="flex items-center gap-3 flex-1 min-w-0">
+                      <div className="w-10 h-10 rounded-full bg-gradient-to-br from-blue-400 to-blue-600 flex items-center justify-center text-white text-sm font-medium flex-shrink-0">
+                        {customer.name ? customer.name.split(' ').map((n: string) => n[0]).join('').slice(0, 2) : '?'}
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <h3 className="font-medium text-foreground truncate">{customer.name || 'Unnamed Customer'}</h3>
+                        <div className="flex items-center gap-2 mt-1">
+                          <p className="text-sm text-muted-foreground truncate">
+                            {customer.email || customer.company || 'No contact info'}
+                          </p>
+                          {customer.status && (
+                            <Badge className={`${getStatusColor(customer.status)} text-xs px-2 py-0.5`}>
+                              {customer.status}
+                            </Badge>
+                          )}
+                        </div>
+                      </div>
+                    </div>
+                    <div className="flex items-center gap-2 flex-shrink-0">
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          openEditModal(customer);
+                        }}
+                        className="h-8 w-8 p-0"
                       >
-                        <div className="truncate">Avatar</div>
-                      </th>
-                      {visibleColumns.map((column, index) => {
-                        const columnWidth = column.width 
-                          ? (column.width.includes('px') ? column.width : `${parseInt(column.width, 10)}px`) 
-                          : '140px';
-                        return (
-                          <th 
-                            key={column.id} 
-                            className="text-left p-2 text-xs font-medium text-muted-foreground border-r border-border/20 whitespace-nowrap" 
-                            style={{ 
-                              width: columnWidth, 
-                              minWidth: columnWidth
-                            }}
-                          >
-                            <div className="truncate" title={column.label}>
-                              {column.label}
-                            </div>
-                          </th>
-                        );
-                      })}
-                      <th 
-                        className="text-right p-2 text-xs font-medium text-muted-foreground sticky right-0 bg-muted/5 z-10" 
-                        style={{ width: '80px', minWidth: '80px' }}
+                        <Edit className="h-4 w-4" />
+                      </Button>
+                      <motion.div
+                        animate={{ rotate: expandedCustomer === customer.$id ? 180 : 0 }}
+                        transition={{ duration: 0.2 }}
                       >
-                        <div className="truncate">Actions</div>
-                      </th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {filteredCustomers.map((customer, index) => (
-                      <motion.tr
-                        key={customer.$id}
-                        initial={{ opacity: 0, y: 20 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        transition={{ delay: index * 0.05 }}
-                        className="border-b border-border/10 hover:bg-muted/10 cursor-pointer group"
-                        onClick={() => openEditModal(customer)}
+                        <ArrowDown className="h-4 w-4 text-muted-foreground" />
+                      </motion.div>
+                    </div>
+                  </div>
+
+                  {/* Expanded Details */}
+                  <AnimatePresence>
+                    {expandedCustomer === customer.$id && (
+                      <motion.div
+                        initial={{ height: 0, opacity: 0 }}
+                        animate={{ height: 'auto', opacity: 1 }}
+                        exit={{ height: 0, opacity: 0 }}
+                        transition={{ duration: 0.3 }}
+                        className="overflow-hidden"
                       >
-                        <td 
-                          className="p-2 sticky left-0 bg-background group-hover:bg-muted/10 z-10 border-r border-border/20" 
-                          style={{ width: '50px', minWidth: '50px' }}
-                        >
-                          <div className="w-6 h-6 rounded-full bg-gradient-to-br from-blue-400 to-blue-600 flex items-center justify-center text-white text-xs font-medium flex-shrink-0">
-                            {customer.name ? customer.name.split(' ').map((n: string) => n[0]).join('').slice(0, 2) : '?'}
-                          </div>
-                        </td>
-                        {visibleColumns.map(column => {
-                          const field = fields.find(f => f.id === column.id);
-                          const value = customer[column.id];
-                          const columnWidth = column.width 
-                            ? (column.width.includes('px') ? column.width : `${parseInt(column.width, 10)}px`) 
-                            : '140px';
-                          
-                          return (
-                            <td 
-                              key={column.id} 
-                              className="p-2 text-xs border-r border-border/20 whitespace-nowrap" 
-                              style={{ 
-                                width: columnWidth, 
-                                minWidth: columnWidth
-                              }}
-                              title={value ? String(value) : ''}
-                            >
-                              {column.id === 'status' ? (
-                                <Badge className={`${getStatusColor(value)} text-xs px-1 py-0.5`}>
-                                  {value}
-                                </Badge>
-                              ) : (
-                                <div className="truncate w-full text-foreground">
-                                  {formatValue(value, field?.type || 'text')}
+                        <div className="px-4 pb-4 border-t border-border/30">
+                          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-4">
+                            {visibleFields.map((field) => {
+                              const value = customer[field.id];
+                              if (!value && value !== 0 && value !== false) return null;
+                              
+                              return (
+                                <div key={field.id} className="space-y-1">
+                                  <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
+                                    {field.label}
+                                  </p>
+                                  <div className="text-sm text-foreground">
+                                    {field.id === 'status' ? (
+                                      <Badge className={`${getStatusColor(value)} text-xs`}>
+                                        {value}
+                                      </Badge>
+                                    ) : (
+                                      <div className="break-words">
+                                        {formatValue(value, field.type)}
+                                      </div>
+                                    )}
+                                  </div>
                                 </div>
-                              )}
-                            </td>
-                          );
-                        })}
-                        <td 
-                          className="p-2 sticky right-0 bg-background group-hover:bg-muted/10 z-10" 
-                          style={{ width: '80px', minWidth: '80px' }}
-                        >
-                          <div className="flex items-center gap-1 justify-end">
-                            <Button 
-                              variant="outline" 
+                              );
+                            })}
+                          </div>
+                          
+                          {/* Action Buttons */}
+                          <div className="flex items-center gap-2 mt-4 pt-4 border-t border-border/30">
+                            <Button
+                              variant="outline"
                               size="sm"
-                              className="h-6 w-6 p-0"
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                openEditModal(customer);
-                              }}
+                              onClick={() => openEditModal(customer)}
+                              className="flex-1"
                             >
-                              <Edit className="h-3 w-3" />
+                              <Edit className="h-4 w-4 mr-2" />
+                              Edit Customer
                             </Button>
-                            <Button 
-                              variant="outline" 
+                            <Button
+                              variant="outline"
                               size="sm"
-                              className="h-6 w-6 p-0 text-red-500 hover:text-red-600"
                               onClick={(e) => {
                                 e.stopPropagation();
                                 deleteCustomer(customer.$id!);
                               }}
+                              className="text-red-500 hover:text-red-600 border-red-500/30 hover:bg-red-500/10"
                             >
-                              <Trash2 className="h-3 w-3" />
+                              <Trash2 className="h-4 w-4" />
                             </Button>
                           </div>
-                        </td>
-                      </motion.tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-
-              {filteredCustomers.length === 0 && !loading && (
+                        </div>
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
+                </motion.div>
+              ))}
+              
+              {filteredCustomers.length === 0 && (
                 <div className="text-center py-8">
                   <Users className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
                   <p className="text-muted-foreground">
-                    {searchTerm ? 'No customers found matching your search.' : 'No customers yet. Add your first customer!'}
+                    {searchTerm ? 'No customers found matching your search.' : 'No customers yet.'}
                   </p>
+                  {!searchTerm && (
+                    <Button 
+                      onClick={openAddModal}
+                      className="mt-4 bg-orange-500 hover:bg-orange-600 text-white"
+                    >
+                      <UserPlus className="h-4 w-4 mr-2" />
+                      Add Your First Customer
+                    </Button>
+                  )}
                 </div>
               )}
             </div>
-          </div>
+
+            {/* Desktop Table View */}
+            <div className="hidden lg:block w-full">
+              <div className="overflow-x-auto border border-border/30 rounded-lg">
+                <div style={{ minWidth: visibleColumns.length > 4 ? `${visibleColumns.length * 150 + 130}px` : 'auto' }}>
+                  <table 
+                    className="border-collapse bg-background w-full"
+                    style={{
+                      tableLayout: 'fixed',
+                      minWidth: '100%'
+                    }}
+                  >
+                    <thead>
+                      <tr className="border-b border-border/30 bg-muted/5">
+                        <th 
+                          className="text-left p-2 text-xs font-medium text-muted-foreground sticky left-0 bg-muted/5 z-10 border-r border-border/20" 
+                          style={{ width: '50px', minWidth: '50px' }}
+                        >
+                          <div className="truncate">Avatar</div>
+                        </th>
+                        {visibleColumns.map((column, index) => {
+                          const columnWidth = column.width 
+                            ? (column.width.includes('px') ? column.width : `${parseInt(column.width, 10)}px`) 
+                            : '140px';
+                          return (
+                            <th 
+                              key={column.id} 
+                              className="text-left p-2 text-xs font-medium text-muted-foreground border-r border-border/20 whitespace-nowrap" 
+                              style={{ 
+                                width: columnWidth, 
+                                minWidth: columnWidth
+                              }}
+                            >
+                              <div className="truncate" title={column.label}>
+                                {column.label}
+                              </div>
+                            </th>
+                          );
+                        })}
+                        <th 
+                          className="text-right p-2 text-xs font-medium text-muted-foreground sticky right-0 bg-muted/5 z-10" 
+                          style={{ width: '80px', minWidth: '80px' }}
+                        >
+                          <div className="truncate">Actions</div>
+                        </th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {filteredCustomers.map((customer, index) => (
+                        <motion.tr
+                          key={customer.$id}
+                          initial={{ opacity: 0, y: 20 }}
+                          animate={{ opacity: 1, y: 0 }}
+                          transition={{ delay: index * 0.05 }}
+                          className="border-b border-border/10 hover:bg-muted/10 cursor-pointer group"
+                          onClick={() => openEditModal(customer)}
+                        >
+                          <td 
+                            className="p-2 sticky left-0 bg-background group-hover:bg-muted/10 z-10 border-r border-border/20" 
+                            style={{ width: '50px', minWidth: '50px' }}
+                          >
+                            <div className="w-6 h-6 rounded-full bg-gradient-to-br from-blue-400 to-blue-600 flex items-center justify-center text-white text-xs font-medium flex-shrink-0">
+                              {customer.name ? customer.name.split(' ').map((n: string) => n[0]).join('').slice(0, 2) : '?'}
+                            </div>
+                          </td>
+                          {visibleColumns.map(column => {
+                            const field = fields.find(f => f.id === column.id);
+                            const value = customer[column.id];
+                            const columnWidth = column.width 
+                              ? (column.width.includes('px') ? column.width : `${parseInt(column.width, 10)}px`) 
+                              : '140px';
+                            
+                            return (
+                              <td 
+                                key={column.id} 
+                                className="p-2 text-xs border-r border-border/20 whitespace-nowrap" 
+                                style={{ 
+                                  width: columnWidth, 
+                                  minWidth: columnWidth
+                                }}
+                                title={value ? String(value) : ''}
+                              >
+                                {column.id === 'status' ? (
+                                  <Badge className={`${getStatusColor(value)} text-xs px-1 py-0.5`}>
+                                    {value}
+                                  </Badge>
+                                ) : (
+                                  <div className="truncate w-full text-foreground">
+                                    {formatValue(value, field?.type || 'text')}
+                                  </div>
+                                )}
+                              </td>
+                            );
+                          })}
+                          <td 
+                            className="p-2 sticky right-0 bg-background group-hover:bg-muted/10 z-10" 
+                            style={{ width: '80px', minWidth: '80px' }}
+                          >
+                            <div className="flex items-center gap-1 justify-end">
+                              <Button 
+                                variant="outline" 
+                                size="sm"
+                                className="h-6 w-6 p-0"
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  openEditModal(customer);
+                                }}
+                              >
+                                <Edit className="h-3 w-3" />
+                              </Button>
+                              <Button 
+                                variant="outline" 
+                                size="sm"
+                                className="h-6 w-6 p-0 text-red-500 hover:text-red-600"
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  deleteCustomer(customer.$id!);
+                                }}
+                              >
+                                <Trash2 className="h-3 w-3" />
+                              </Button>
+                            </div>
+                          </td>
+                        </motion.tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+                
+                {filteredCustomers.length === 0 && (
+                  <div className="text-center py-8">
+                    <Users className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
+                    <p className="text-muted-foreground">
+                      {searchTerm ? 'No customers found matching your search.' : 'No customers yet.'}
+                    </p>
+                    {!searchTerm && (
+                      <Button 
+                        onClick={openAddModal}
+                        className="mt-4 bg-orange-500 hover:bg-orange-600 text-white"
+                      >
+                        <UserPlus className="h-4 w-4 mr-2" />
+                        Add Your First Customer
+                      </Button>
+                    )}
+                  </div>
+                )}
+              </div>
+            </div>
+          </>
         )}
       </DashboardCard>
 

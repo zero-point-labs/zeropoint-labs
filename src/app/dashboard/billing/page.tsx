@@ -15,7 +15,9 @@ import {
   Zap,
   Shield,
   Users,
-  Database
+  Database,
+  ChevronRight,
+  Package
 } from "lucide-react";
 
 const currentPlan = {
@@ -55,244 +57,205 @@ const plans = [
 ];
 
 const invoices = [
-  { id: "INV-2024-001", date: "Jan 1, 2024", amount: "$99.00", status: "paid" },
-  { id: "INV-2023-012", date: "Dec 1, 2023", amount: "$99.00", status: "paid" },
-  { id: "INV-2023-011", date: "Nov 1, 2023", amount: "$99.00", status: "paid" },
-  { id: "INV-2023-010", date: "Oct 1, 2023", amount: "$99.00", status: "paid" },
-  { id: "INV-2023-009", date: "Sep 1, 2023", amount: "$99.00", status: "paid" },
+  { id: "INV-001", date: "Dec 1, 2024", amount: "$99.00", status: "Paid", description: "Professional Plan - December 2024" },
+  { id: "INV-002", date: "Nov 1, 2024", amount: "$99.00", status: "Paid", description: "Professional Plan - November 2024" },
+  { id: "INV-003", date: "Oct 1, 2024", amount: "$99.00", status: "Paid", description: "Professional Plan - October 2024" },
+  { id: "INV-004", date: "Sep 1, 2024", amount: "$99.00", status: "Paid", description: "Professional Plan - September 2024" },
 ];
 
 export default function BillingPage() {
   return (
-    <div className="space-y-8 p-6 lg:p-8">
+    <div className="space-y-6 sm:space-y-8 p-4 sm:p-6 lg:p-8">
       {/* Header */}
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-3xl font-light text-foreground mb-2">Billing & Plans</h1>
-          <p className="text-muted-foreground">Manage your subscription and billing information</p>
-        </div>
-        <div className="flex items-center gap-3">
-          <button className="px-4 py-2 bg-muted/50 hover:bg-muted text-muted-foreground hover:text-foreground rounded-lg transition-colors flex items-center gap-2 border border-border hover:border-border/70">
-            <Download className="h-4 w-4" />
-            Download Invoice
-          </button>
-        </div>
+      <div>
+        <h1 className="text-2xl sm:text-3xl font-light text-foreground mb-2">Billing & Subscription</h1>
+        <p className="text-sm sm:text-base text-muted-foreground">Manage your subscription and billing details</p>
       </div>
 
-      {/* Current Plan & Usage */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        <DashboardCard className="lg:col-span-2">
-          <div className="flex items-center justify-between mb-6">
-            <h2 className="text-xl font-medium text-foreground">Current Plan</h2>
-            <Badge className="bg-orange-500/20 text-orange-400">Active</Badge>
+      {/* Current Plan */}
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+      >
+        <DashboardCard>
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-4 sm:mb-6">
+            <div className="mb-4 sm:mb-0">
+              <h2 className="text-lg sm:text-xl font-medium text-foreground mb-2">Current Plan</h2>
+              <p className="text-sm text-muted-foreground">You're currently on the Professional plan</p>
+            </div>
+            <Badge className="bg-orange-500/20 text-orange-400 border-0 self-start sm:self-auto">
+              Active
+            </Badge>
           </div>
           
-          <div className="flex items-center justify-between mb-8">
-            <div>
-              <p className="text-2xl font-semibold text-foreground">{currentPlan.name}</p>
-              <p className="text-sm text-muted-foreground">Billed {currentPlan.billing}</p>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 sm:gap-6">
+            <div className="flex items-center gap-3">
+              <Package className="h-8 w-8 sm:h-10 sm:w-10 text-orange-400" />
+              <div>
+                <h3 className="text-xl sm:text-2xl font-semibold text-foreground">Professional</h3>
+                <p className="text-sm text-muted-foreground">Monthly subscription</p>
+              </div>
             </div>
-            <div className="text-right">
-              <p className="text-2xl font-semibold text-foreground">{currentPlan.price}/mo</p>
-              <p className="text-sm text-muted-foreground">Next billing: Jan 1, 2025</p>
+            
+            <div className="space-y-1">
+              <p className="text-sm text-muted-foreground">Price</p>
+              <p className="text-xl sm:text-2xl font-semibold text-foreground">$99<span className="text-sm font-normal text-muted-foreground">/month</span></p>
             </div>
-          </div>
-
-          {/* Usage Stats */}
-          <div className="space-y-6">
-            <div>
-              <div className="flex items-center justify-between mb-2">
-                <span className="text-sm text-muted-foreground">Bandwidth</span>
-                <span className="text-foreground">{currentPlan.usage.bandwidth.used} {currentPlan.usage.bandwidth.unit}</span>
-              </div>
-              <div className="w-full bg-muted/30 rounded-full h-2 overflow-hidden">
-                <motion.div 
-                  className="bg-gradient-to-r from-blue-400 to-blue-600 h-2 rounded-full"
-                  initial={{ width: 0 }}
-                  animate={{ width: `${(currentPlan.usage.bandwidth.used / currentPlan.usage.bandwidth.total) * 100}%` }}
-                  transition={{ delay: 0.2, duration: 1 }}
-                />
-              </div>
-              <p className="text-xs text-muted-foreground mt-1">
-                {currentPlan.usage.bandwidth.total - currentPlan.usage.bandwidth.used} {currentPlan.usage.bandwidth.unit} remaining
-              </p>
-            </div>
-
-            <div>
-              <div className="flex items-center justify-between mb-2">
-                <span className="text-sm text-muted-foreground">Storage</span>
-                <span className="text-foreground">{currentPlan.usage.storage.used} {currentPlan.usage.storage.unit}</span>
-              </div>
-              <div className="w-full bg-muted/30 rounded-full h-2 overflow-hidden">
-                <motion.div 
-                  className="bg-gradient-to-r from-green-400 to-green-600 h-2 rounded-full"
-                  initial={{ width: 0 }}
-                  animate={{ width: `${(currentPlan.usage.storage.used / currentPlan.usage.storage.total) * 100}%` }}
-                  transition={{ delay: 0.4, duration: 1 }}
-                />
-              </div>
-              <p className="text-xs text-muted-foreground mt-1">
-                {currentPlan.usage.storage.total - currentPlan.usage.storage.used} {currentPlan.usage.storage.unit} remaining
-              </p>
-            </div>
-
-            <div>
-              <div className="flex items-center justify-between mb-2">
-                <span className="text-sm text-muted-foreground">Email Accounts</span>
-                <span className="text-foreground">{currentPlan.usage.email.used}</span>
-              </div>
-              <div className="w-full bg-muted/30 rounded-full h-2 overflow-hidden">
-                <motion.div 
-                  className="bg-gradient-to-r from-purple-400 to-purple-600 h-2 rounded-full"
-                  initial={{ width: 0 }}
-                  animate={{ width: `${(currentPlan.usage.email.used / currentPlan.usage.email.total) * 100}%` }}
-                  transition={{ delay: 0.6, duration: 1 }}
-                />
-              </div>
-              <p className="text-xs text-muted-foreground mt-1">
-                {currentPlan.usage.email.total - currentPlan.usage.email.used} accounts remaining
-              </p>
+            
+            <div className="space-y-1">
+              <p className="text-sm text-muted-foreground">Next billing date</p>
+              <p className="text-sm sm:text-base font-medium text-foreground">January 1, 2025</p>
             </div>
           </div>
-        </DashboardCard>
-
-        <DashboardCard>
-          <div className="flex items-center justify-between p-4 rounded-lg bg-muted/20 border border-border">
-            <Zap className="h-8 w-8 text-orange-400" />
-            <Button className="bg-gradient-to-r from-orange-400 to-orange-600 hover:from-orange-500 hover:to-orange-700 text-white">
+          
+          <div className="mt-4 sm:mt-6 pt-4 sm:pt-6 border-t border-border">
+            <Button variant="outline" className="text-sm">
               Upgrade Plan
             </Button>
           </div>
         </DashboardCard>
-      </div>
+      </motion.div>
 
-      {/* Available Plans */}
-      <DashboardCard>
-        <h2 className="text-xl font-medium text-foreground mb-6">Available Plans</h2>
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          {plans.map((plan, index) => (
-            <motion.div
-              key={plan.name}
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: index * 0.1 }}
-              className={`relative p-6 rounded-xl border transition-all duration-200 ${
-                plan.popular 
-                  ? "border-orange-500/50 bg-orange-500/5" 
-                  : "border-border bg-muted/10 hover:border-border/70"
-              }`}
-            >
-              {plan.popular && (
-                <Badge className="absolute -top-3 left-1/2 transform -translate-x-1/2 bg-gradient-to-r from-orange-400 to-orange-600 text-white border-0">
-                  Most Popular
-                </Badge>
-              )}
-              
-              <div className="text-center mb-6">
-                <h3 className="text-lg font-medium text-foreground mb-1">{plan.name}</h3>
-                <div className="flex items-baseline justify-center gap-1">
-                  <span className="text-3xl font-bold text-foreground">{plan.price}</span>
-                  <span className="text-muted-foreground">/month</span>
-                </div>
-              </div>
-
-              <ul className="space-y-3 mb-6">
-                {plan.features.map((feature, i) => (
-                  <li key={i} className="flex items-center gap-2">
-                    <CheckCircle className="h-4 w-4 text-green-400 flex-shrink-0" />
-                    <span className="text-sm text-muted-foreground">{feature}</span>
-                  </li>
-                ))}
-              </ul>
-
-              <Button 
-                className={`w-full ${
-                  plan.popular
-                    ? "bg-gradient-to-r from-orange-400 to-orange-600 hover:from-orange-500 hover:to-orange-700 text-white"
-                    : "border border-border hover:bg-muted text-foreground"
-                }`}
-                variant={plan.popular ? "default" : "outline"}
-              >
-                {plan.name === currentPlan.name ? "Current Plan" : "Choose Plan"}
-              </Button>
-            </motion.div>
-          ))}
-        </div>
-      </DashboardCard>
-
-      {/* Payment Method & Invoices */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+      {/* Payment Method */}
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.1 }}
+      >
         <DashboardCard>
-          <h2 className="text-xl font-medium text-foreground">Payment Method</h2>
-          <div className="mt-6">
-            <div className="p-4 rounded-lg bg-muted/20 border border-border">
+          <div className="flex items-center gap-3 mb-4 sm:mb-6">
+            <CreditCard className="h-4 w-4 sm:h-5 sm:w-5 text-orange-400" />
+            <h2 className="text-lg sm:text-xl font-medium text-foreground">Payment Method</h2>
+          </div>
+          
+          <div className="p-3 sm:p-4 rounded-lg bg-muted/20 border border-border">
+            <div className="flex items-center justify-between">
               <div className="flex items-center gap-3">
-                <CreditCard className="h-6 w-6 text-foreground" />
+                <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-lg bg-gradient-to-br from-blue-400 to-blue-600 flex items-center justify-center">
+                  <CreditCard className="h-5 w-5 sm:h-6 sm:w-6 text-white" />
+                </div>
                 <div>
-                  <p className="text-foreground font-medium">•••• •••• •••• 4242</p>
-                  <p className="text-sm text-muted-foreground">Expires 12/25</p>
+                  <p className="text-sm sm:text-base font-medium text-foreground">•••• •••• •••• 4242</p>
+                  <p className="text-xs sm:text-sm text-muted-foreground">Expires 12/2025</p>
                 </div>
               </div>
+              <Button variant="outline" size="sm" className="text-xs sm:text-sm">
+                Update
+              </Button>
             </div>
-            <Button variant="outline" className="mt-4 border-border hover:bg-muted">
-              Update Payment Method
-            </Button>
           </div>
+          
+          <Button variant="outline" className="mt-4 text-sm">
+            Add Payment Method
+          </Button>
         </DashboardCard>
+      </motion.div>
 
+      {/* Billing History */}
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.2 }}
+      >
         <DashboardCard>
-          <div className="flex items-center justify-between mb-6">
-            <h2 className="text-xl font-medium text-foreground">Recent Invoices</h2>
-            <Button variant="outline" className="border-border hover:bg-muted">
-              View All
+          <div className="flex items-center justify-between mb-4 sm:mb-6">
+            <div className="flex items-center gap-3">
+              <Calendar className="h-4 w-4 sm:h-5 sm:w-5 text-orange-400" />
+              <h2 className="text-lg sm:text-xl font-medium text-foreground">Billing History</h2>
+            </div>
+            <Button variant="outline" size="sm" className="text-xs sm:text-sm">
+              <Download className="h-3 w-3 sm:h-4 sm:w-4 mr-2" />
+              Export
             </Button>
           </div>
-          <div className="space-y-3">
-            {invoices.slice(0, 4).map((invoice, index) => (
-              <motion.div
-                key={invoice.id}
-                initial={{ opacity: 0, x: -20 }}
-                animate={{ opacity: 1, x: 0 }}
-                transition={{ delay: index * 0.1 }}
-                className="flex items-center justify-between p-3 rounded-lg hover:bg-muted/20 transition-colors group"
-              >
-                <div>
-                  <p className="text-sm text-foreground">{invoice.date}</p>
-                  <p className="text-xs text-muted-foreground">{invoice.id}</p>
+          
+          {/* Mobile Card View */}
+          <div className="block sm:hidden space-y-3">
+            {invoices.map((invoice) => (
+              <div key={invoice.id} className="p-3 rounded-lg bg-muted/20 border border-border">
+                <div className="flex items-start justify-between mb-2">
+                  <div>
+                    <p className="font-medium text-foreground">{invoice.description}</p>
+                    <p className="text-xs text-muted-foreground">{invoice.date}</p>
+                  </div>
+                  <Badge variant="secondary" className="text-xs bg-green-500/20 text-green-400 border-0">
+                    <CheckCircle className="h-3 w-3 mr-1" />
+                    {invoice.status}
+                  </Badge>
                 </div>
-                <div className="flex items-center gap-3">
-                  <span className="text-foreground font-medium">{invoice.amount}</span>
-                  <button className="opacity-0 group-hover:opacity-100 transition-opacity text-muted-foreground hover:text-foreground">
-                    <Download className="h-4 w-4" />
-                  </button>
+                <div className="flex items-center justify-between">
+                  <p className="font-medium text-foreground">{invoice.amount}</p>
+                  <Button variant="ghost" size="sm" className="h-7 text-xs">
+                    Download
+                    <ChevronRight className="h-3 w-3 ml-1" />
+                  </Button>
                 </div>
-              </motion.div>
+              </div>
             ))}
           </div>
+          
+          {/* Desktop Table View */}
+          <div className="hidden sm:block overflow-x-auto">
+            <table className="w-full">
+              <thead className="text-sm text-muted-foreground border-b border-border">
+                <tr>
+                  <th className="text-left py-3 px-2">Invoice</th>
+                  <th className="text-left py-3 px-2">Date</th>
+                  <th className="text-left py-3 px-2">Amount</th>
+                  <th className="text-left py-3 px-2">Status</th>
+                  <th className="text-right py-3 px-2">Actions</th>
+                </tr>
+              </thead>
+              <tbody>
+                {invoices.map((invoice) => (
+                  <tr key={invoice.id} className="border-b border-border/50">
+                    <td className="py-3 px-2">
+                      <p className="font-medium text-foreground">{invoice.description}</p>
+                      <p className="text-xs text-muted-foreground">#{invoice.id}</p>
+                    </td>
+                    <td className="py-3 px-2 text-sm text-foreground">{invoice.date}</td>
+                    <td className="py-3 px-2 font-medium text-foreground">{invoice.amount}</td>
+                    <td className="py-3 px-2">
+                      <Badge variant="secondary" className="bg-green-500/20 text-green-400 border-0">
+                        <CheckCircle className="h-3 w-3 mr-1" />
+                        {invoice.status}
+                      </Badge>
+                    </td>
+                    <td className="py-3 px-2 text-right">
+                      <Button variant="ghost" size="sm">
+                        Download
+                        <ChevronRight className="h-4 w-4 ml-1" />
+                      </Button>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
         </DashboardCard>
-      </div>
+      </motion.div>
 
-      {/* Billing Stats */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-        <DashboardCard className="p-4 text-center">
-          <DollarSign className="h-8 w-8 text-green-400 mx-auto mb-2" />
-          <h3 className="text-lg font-medium text-foreground">Total Spent</h3>
-          <p className="text-sm text-muted-foreground">This year</p>
-          <p className="text-2xl font-semibold text-foreground">$1,188</p>
+      {/* Usage Stats */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3 sm:gap-4">
+        <DashboardCard className="p-3 sm:p-4 text-center">
+          <DollarSign className="h-6 w-6 sm:h-8 sm:w-8 text-green-400 mx-auto mb-2" />
+          <h3 className="text-sm sm:text-lg font-medium text-foreground">Total Spent</h3>
+          <p className="text-xs sm:text-sm text-muted-foreground">This year</p>
+          <p className="text-xl sm:text-2xl font-semibold text-foreground">$1,188</p>
         </DashboardCard>
         
-        <DashboardCard className="p-4 text-center">
-          <Calendar className="h-8 w-8 text-blue-400 mx-auto mb-2" />
-          <h3 className="text-lg font-medium text-foreground">Next Payment</h3>
-          <p className="text-sm text-muted-foreground">Due Jan 1, 2025</p>
-          <p className="text-2xl font-semibold text-foreground">$99.00</p>
+        <DashboardCard className="p-3 sm:p-4 text-center">
+          <Calendar className="h-6 w-6 sm:h-8 sm:w-8 text-blue-400 mx-auto mb-2" />
+          <h3 className="text-sm sm:text-lg font-medium text-foreground">Next Payment</h3>
+          <p className="text-xs sm:text-sm text-muted-foreground">Due Jan 1, 2025</p>
+          <p className="text-xl sm:text-2xl font-semibold text-foreground">$99.00</p>
         </DashboardCard>
         
-        <DashboardCard className="p-4 text-center">
-          <TrendingUp className="h-8 w-8 text-orange-400 mx-auto mb-2" />
-          <h3 className="text-lg font-medium text-foreground">Active Since</h3>
-          <p className="text-sm text-muted-foreground">Customer for</p>
-          <p className="text-2xl font-semibold text-foreground">12 months</p>
+        <DashboardCard className="p-3 sm:p-4 text-center sm:col-span-2 md:col-span-1">
+          <TrendingUp className="h-6 w-6 sm:h-8 sm:w-8 text-orange-400 mx-auto mb-2" />
+          <h3 className="text-sm sm:text-lg font-medium text-foreground">Active Since</h3>
+          <p className="text-xs sm:text-sm text-muted-foreground">Customer for</p>
+          <p className="text-xl sm:text-2xl font-semibold text-foreground">12 months</p>
         </DashboardCard>
       </div>
     </div>

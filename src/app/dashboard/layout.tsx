@@ -142,7 +142,7 @@ export default function DashboardLayout({
   const getSidebarClasses = () => {
     const baseClasses = `fixed lg:relative inset-y-0 left-0 z-50 flex flex-col backdrop-blur-xl border-r transition-all duration-300 ${
       isSidebarOpen ? "translate-x-0" : "-translate-x-full"
-    } lg:translate-x-0`;
+    } lg:translate-x-0 w-72 sm:w-80`;
     
     if (theme === 'dark') {
       return `${baseClasses} bg-black/40 border-white/10`;
@@ -190,12 +190,12 @@ export default function DashboardLayout({
       <motion.aside
         initial={false}
         animate={{
-          width: isCollapsed ? "80px" : "280px",
+          width: isCollapsed ? "80px" : "320px",
         }}
         className={getSidebarClasses()}
       >
         {/* Logo */}
-        <div className={`flex items-center justify-between p-6 border-b ${
+        <div className={`flex items-center justify-between p-4 sm:p-6 border-b ${
           theme === 'dark' ? 'border-white/10' : 'border-black/10'
         }`}>
           <Link href="/dashboard" className={`transition-opacity duration-200 ${isCollapsed ? "opacity-0 w-0" : "opacity-100"}`}>
@@ -204,7 +204,7 @@ export default function DashboardLayout({
               alt="Zero Point Labs"
               width={150}
               height={180}
-              className="transition-all duration-300"
+              className="transition-all duration-300 w-32 sm:w-[150px]"
             />
           </Link>
           <button
@@ -235,11 +235,11 @@ export default function DashboardLayout({
 
         {/* User Info - Show demo mode indicator */}
         {!isCollapsed && (
-          <div className={`px-6 py-4 border-b ${
+          <div className={`px-4 sm:px-6 py-3 sm:py-4 border-b ${
             theme === 'dark' ? 'border-white/10' : 'border-black/10'
           }`}>
             <div className="flex items-center gap-3">
-              <div className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-medium ${
+              <div className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-medium flex-shrink-0 ${
                 isDemoMode 
                   ? 'bg-orange-500 text-white' 
                   : theme === 'dark'
@@ -270,7 +270,7 @@ export default function DashboardLayout({
         )}
 
         {/* Navigation */}
-        <nav className="flex-1 overflow-y-auto p-4 space-y-2">
+        <nav className="flex-1 overflow-y-auto p-3 sm:p-4 space-y-1 sm:space-y-2">
           {navItems.map((item) => {
             const isActive = pathname === item.href;
             const Icon = item.icon;
@@ -280,7 +280,7 @@ export default function DashboardLayout({
                 key={item.href}
                 href={item.href}
                 onClick={() => setIsSidebarOpen(false)}
-                className={`group flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all duration-200 ${
+                className={`group flex items-center gap-3 px-3 py-2 sm:py-2.5 rounded-lg transition-all duration-200 ${
                   isActive
                     ? theme === 'dark'
                       ? "bg-gradient-to-r from-orange-500/20 to-orange-600/20 text-orange-400 border border-orange-500/30"
@@ -300,8 +300,8 @@ export default function DashboardLayout({
                       : "text-slate-500 group-hover:text-black"
                 }`} />
                 {!isCollapsed && (
-                  <div className="flex flex-col">
-                    <span className="font-medium">{item.label}</span>
+                  <div className="flex flex-col min-w-0">
+                    <span className="font-medium text-sm sm:text-base">{item.label}</span>
                     <span className={`text-xs transition-all duration-200 ${
                       isActive 
                         ? theme === 'dark' 
@@ -321,7 +321,7 @@ export default function DashboardLayout({
         </nav>
 
         {/* Bottom section with theme toggle and logout */}
-        <div className={`p-4 border-t space-y-2 ${
+        <div className={`p-3 sm:p-4 border-t space-y-2 ${
           theme === 'dark' ? 'border-white/10' : 'border-black/10'
         }`}>
           {/* Theme Toggle */}
@@ -349,25 +349,29 @@ export default function DashboardLayout({
       </motion.aside>
 
       {/* Main Content */}
-      <div className="flex-1 flex flex-col">
+      <div className="flex-1 flex flex-col min-w-0">
         {/* Top Bar */}
         <header className={getTopBarClasses()}>
-          <button
-            onClick={() => setIsSidebarOpen(true)}
-            className={`lg:hidden transition-colors ${
-              theme === 'dark'
-                ? "text-slate-400 hover:text-white"
-                : "text-slate-600 hover:text-black"
-            }`}
-          >
-            <Menu className="h-6 w-6" />
-          </button>
-          <h1 className={`text-xl font-semibold ${
-            theme === 'dark' ? 'text-white' : 'text-black'
-          }`}>
-            Dashboard {isDemoMode && <span className="text-orange-500">(Demo)</span>}
-          </h1>
-          <div className="w-6" /> {/* Spacer for centering */}
+          <div className="flex items-center gap-3 flex-1">
+            <button
+              onClick={() => setIsSidebarOpen(true)}
+              className={`lg:hidden transition-colors ${
+                theme === 'dark'
+                  ? "text-slate-400 hover:text-white"
+                  : "text-slate-600 hover:text-black"
+              }`}
+            >
+              <Menu className="h-6 w-6" />
+            </button>
+            <h1 className={`text-lg sm:text-xl font-semibold truncate ${
+              theme === 'dark' ? 'text-white' : 'text-black'
+            }`}>
+              Dashboard {isDemoMode && <span className="text-orange-500 text-sm sm:text-base">(Demo)</span>}
+            </h1>
+          </div>
+          <div className="hidden sm:block lg:hidden">
+            <ThemeToggle />
+          </div>
         </header>
 
         {/* Page Content */}

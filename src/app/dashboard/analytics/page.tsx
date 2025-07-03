@@ -160,6 +160,7 @@ export default function AnalyticsPage() {
   const [timeRange, setTimeRange] = useState("month");
   const [selectedMetric, setSelectedMetric] = useState("visitors");
   const [compareMode, setCompareMode] = useState(false);
+  const [expandedSource, setExpandedSource] = useState<number | null>(null);
 
   const currentMetrics = performanceMetrics[timeRange as keyof typeof performanceMetrics];
 
@@ -182,18 +183,18 @@ export default function AnalyticsPage() {
   };
 
   return (
-    <div className="space-y-8 p-6 lg:p-8">
+    <div className="space-y-6 sm:space-y-8 p-4 sm:p-6 lg:p-8">
       {/* Header with Date Range */}
-      <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
+      <div className="flex flex-col gap-4">
         <div>
-          <h1 className="text-3xl font-light text-foreground mb-2">Analytics Dashboard</h1>
-          <p className="text-muted-foreground">Comprehensive insights into your website performance</p>
+          <h1 className="text-2xl sm:text-3xl font-light text-foreground mb-2">Analytics Dashboard</h1>
+          <p className="text-sm sm:text-base text-muted-foreground">Comprehensive insights into your website performance</p>
         </div>
-        <div className="flex items-center gap-3">
-          <div className="flex items-center gap-2 bg-muted/30 rounded-lg p-1">
+        <div className="flex flex-col sm:flex-row sm:items-center gap-3">
+          <div className="flex items-center gap-2 bg-muted/30 rounded-lg p-1 flex-1 sm:flex-initial">
             <button
               onClick={() => setTimeRange("today")}
-              className={`px-3 py-1.5 rounded-md text-sm transition-all ${
+              className={`px-2.5 sm:px-3 py-1.5 rounded-md text-xs sm:text-sm transition-all flex-1 sm:flex-initial ${
                 timeRange === "today" 
                   ? "bg-orange-500 text-white" 
                   : "text-muted-foreground hover:text-foreground"
@@ -203,97 +204,100 @@ export default function AnalyticsPage() {
             </button>
             <button
               onClick={() => setTimeRange("week")}
-              className={`px-3 py-1.5 rounded-md text-sm transition-all ${
+              className={`px-2.5 sm:px-3 py-1.5 rounded-md text-xs sm:text-sm transition-all flex-1 sm:flex-initial ${
                 timeRange === "week" 
                   ? "bg-orange-500 text-white" 
                   : "text-muted-foreground hover:text-foreground"
               }`}
             >
               7 Days
-          </button>
+            </button>
             <button
               onClick={() => setTimeRange("month")}
-              className={`px-3 py-1.5 rounded-md text-sm transition-all ${
+              className={`px-2.5 sm:px-3 py-1.5 rounded-md text-xs sm:text-sm transition-all flex-1 sm:flex-initial ${
                 timeRange === "month" 
                   ? "bg-orange-500 text-white" 
                   : "text-muted-foreground hover:text-foreground"
               }`}
             >
               30 Days
-          </button>
+            </button>
           </div>
-          <Button variant="outline" size="sm">
-            <Calendar className="h-4 w-4 mr-2" />
-            Custom Range
-          </Button>
-          <Button variant="outline" size="sm">
-            <RefreshCw className="h-4 w-4" />
-          </Button>
+          <div className="flex gap-2">
+            <Button variant="outline" size="sm" className="text-xs sm:text-sm">
+              <Calendar className="h-3 w-3 sm:h-4 sm:w-4 mr-1 sm:mr-2" />
+              <span className="hidden sm:inline">Custom Range</span>
+              <span className="sm:hidden">Custom</span>
+            </Button>
+            <Button variant="outline" size="sm" className="px-2 sm:px-3">
+              <RefreshCw className="h-3 w-3 sm:h-4 sm:w-4" />
+            </Button>
+          </div>
         </div>
       </div>
 
       {/* Performance Overview */}
       <div>
-        <h2 className="text-xl font-medium text-foreground mb-4">Website Performance Overview</h2>
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-4">
+        <h2 className="text-lg sm:text-xl font-medium text-foreground mb-4">Website Performance Overview</h2>
+        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3 sm:gap-4">
           <DashboardStatCard 
             interactive 
             glow
-            icon={<Users className="h-5 w-5 text-blue-400" />}
+            icon={<Users className="h-4 w-4 sm:h-5 sm:w-5 text-blue-400" />}
             trend={getChangeIndicator("+12.5%")}
           >
-            <h3 className="text-2xl font-semibold text-foreground">{currentMetrics.visitors}</h3>
-            <p className="text-sm text-muted-foreground">Total Visitors</p>
+            <h3 className="text-lg sm:text-2xl font-semibold text-foreground">{currentMetrics.visitors}</h3>
+            <p className="text-xs sm:text-sm text-muted-foreground">Total Visitors</p>
           </DashboardStatCard>
 
           <DashboardStatCard 
             interactive 
             glow
-            icon={<Users className="h-5 w-5 text-purple-400" />}
+            icon={<Users className="h-4 w-4 sm:h-5 sm:w-5 text-purple-400" />}
             trend={getChangeIndicator("+8.3%")}
           >
-            <h3 className="text-2xl font-semibold text-foreground">{currentMetrics.unique}</h3>
-            <p className="text-sm text-muted-foreground">Unique Visitors</p>
+            <h3 className="text-lg sm:text-2xl font-semibold text-foreground">{currentMetrics.unique}</h3>
+            <p className="text-xs sm:text-sm text-muted-foreground">Unique Visitors</p>
           </DashboardStatCard>
 
           <DashboardStatCard 
             interactive 
             glow
-            icon={<Activity className="h-5 w-5 text-red-400" />}
+            icon={<Activity className="h-4 w-4 sm:h-5 sm:w-5 text-red-400" />}
             trend={getChangeIndicator("-2.1%", false)}
           >
-            <h3 className="text-2xl font-semibold text-foreground">{currentMetrics.bounceRate}</h3>
-            <p className="text-sm text-muted-foreground">Bounce Rate</p>
+            <h3 className="text-lg sm:text-2xl font-semibold text-foreground">{currentMetrics.bounceRate}</h3>
+            <p className="text-xs sm:text-sm text-muted-foreground">Bounce Rate</p>
           </DashboardStatCard>
 
           <DashboardStatCard 
             interactive 
             glow
-            icon={<Clock className="h-5 w-5 text-green-400" />}
+            icon={<Clock className="h-4 w-4 sm:h-5 sm:w-5 text-green-400" />}
             trend={getChangeIndicator("+18.7%")}
           >
-            <h3 className="text-2xl font-semibold text-foreground">{currentMetrics.avgDuration}</h3>
-            <p className="text-sm text-muted-foreground">Avg. Duration</p>
+            <h3 className="text-lg sm:text-2xl font-semibold text-foreground">{currentMetrics.avgDuration}</h3>
+            <p className="text-xs sm:text-sm text-muted-foreground">Avg. Duration</p>
           </DashboardStatCard>
 
           <DashboardStatCard 
             interactive 
             glow
-            icon={<Eye className="h-5 w-5 text-orange-400" />}
+            icon={<Eye className="h-4 w-4 sm:h-5 sm:w-5 text-orange-400" />}
             trend={getChangeIndicator("+15.4%")}
           >
-            <h3 className="text-2xl font-semibold text-foreground">{currentMetrics.pageViews}</h3>
-            <p className="text-sm text-muted-foreground">Page Views</p>
+            <h3 className="text-lg sm:text-2xl font-semibold text-foreground">{currentMetrics.pageViews}</h3>
+            <p className="text-xs sm:text-sm text-muted-foreground">Page Views</p>
           </DashboardStatCard>
 
           <DashboardStatCard 
             interactive 
             glow
-            icon={<Target className="h-5 w-5 text-indigo-400" />}
+            icon={<Target className="h-4 w-4 sm:h-5 sm:w-5 text-indigo-400" />}
             trend={getChangeIndicator("+0.3%")}
           >
-            <h3 className="text-2xl font-semibold text-foreground">{currentMetrics.conversionRate}</h3>
-            <p className="text-sm text-muted-foreground">Conversion Rate</p>
+            <h3 className="text-lg sm:text-2xl font-semibold text-foreground">{currentMetrics.conversionRate}</h3>
+            <p className="text-xs sm:text-sm text-muted-foreground">Conversion Rate</p>
           </DashboardStatCard>
         </div>
       </div>
@@ -305,39 +309,39 @@ export default function AnalyticsPage() {
         transition={{ delay: 0.1 }}
       >
         <DashboardCard>
-          <div className="flex items-center justify-between mb-6">
+          <div className="flex items-center justify-between mb-4 sm:mb-6">
             <div className="flex items-center gap-2">
-              <h2 className="text-xl font-medium text-foreground">Real-Time Analytics</h2>
+              <h2 className="text-lg sm:text-xl font-medium text-foreground">Real-Time Analytics</h2>
               <div className="flex items-center gap-1">
                 <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse" />
-                <span className="text-sm text-green-500">Live</span>
+                <span className="text-xs sm:text-sm text-green-500">Live</span>
               </div>
             </div>
-            <Zap className="h-5 w-5 text-yellow-400" />
+            <Zap className="h-4 w-4 sm:h-5 sm:w-5 text-yellow-400" />
           </div>
           
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 sm:gap-6">
             <div className="text-center">
-              <div className="inline-flex items-center justify-center w-20 h-20 rounded-full bg-gradient-to-br from-green-400/20 to-green-600/20 mb-3">
-                <span className="text-3xl font-bold text-green-400">{realTimeData.activeUsers}</span>
+              <div className="inline-flex items-center justify-center w-16 h-16 sm:w-20 sm:h-20 rounded-full bg-gradient-to-br from-green-400/20 to-green-600/20 mb-3">
+                <span className="text-2xl sm:text-3xl font-bold text-green-400">{realTimeData.activeUsers}</span>
               </div>
-              <p className="text-sm text-muted-foreground">Active Users Now</p>
+              <p className="text-xs sm:text-sm text-muted-foreground">Active Users Now</p>
             </div>
             
             <div className="space-y-2">
-              <p className="text-sm font-medium text-foreground mb-2">Top Active Pages</p>
+              <p className="text-xs sm:text-sm font-medium text-foreground mb-2">Top Active Pages</p>
               {realTimeData.topActivePages.map((page, i) => (
-                <div key={i} className="flex items-center justify-between text-sm">
-                  <span className="text-muted-foreground">{page.page}</span>
-                  <Badge variant="secondary">{page.users} users</Badge>
+                <div key={i} className="flex items-center justify-between text-xs sm:text-sm">
+                  <span className="text-muted-foreground truncate mr-2">{page.page}</span>
+                  <Badge variant="secondary" className="text-xs">{page.users} users</Badge>
                 </div>
               ))}
             </div>
             
             <div className="space-y-2">
-              <p className="text-sm font-medium text-foreground mb-2">Recent Events</p>
+              <p className="text-xs sm:text-sm font-medium text-foreground mb-2">Recent Events</p>
               {realTimeData.recentEvents.map((event, i) => (
-                <div key={i} className="flex items-start gap-2 text-sm">
+                <div key={i} className="flex items-start gap-2 text-xs sm:text-sm">
                   <span className="text-muted-foreground text-xs">{event.time}</span>
                   <div>
                     <p className="text-foreground">{event.event}</p>
@@ -493,20 +497,58 @@ export default function AnalyticsPage() {
         transition={{ delay: 0.6 }}
       >
         <DashboardCard>
-          <div className="flex items-center justify-between mb-6">
-            <h2 className="text-xl font-medium text-foreground">Top Pages Performance</h2>
+          <div className="flex items-center justify-between mb-4 sm:mb-6">
+            <h2 className="text-lg sm:text-xl font-medium text-foreground">Top Pages Performance</h2>
             <div className="flex items-center gap-2">
-              <Button variant="outline" size="sm">
+              <Button variant="outline" size="sm" className="hidden sm:flex">
                 <Filter className="h-4 w-4 mr-2" />
                 Filter
               </Button>
-              <Button variant="outline" size="sm">
-                <Download className="h-4 w-4" />
+              <Button variant="outline" size="sm" className="px-2 sm:px-3">
+                <Download className="h-3 w-3 sm:h-4 sm:w-4" />
               </Button>
             </div>
           </div>
           
-          <div className="overflow-x-auto">
+          {/* Mobile Card View */}
+          <div className="block sm:hidden space-y-3">
+            {topPages.map((page, index) => (
+              <motion.div
+                key={index}
+                initial={{ opacity: 0, x: -20 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ delay: 0.6 + index * 0.05 }}
+                className="p-4 rounded-lg bg-muted/20 border border-border/30"
+              >
+                <div className="flex items-start justify-between mb-2">
+                  <div className="flex-1 min-w-0">
+                    <p className="font-medium text-foreground truncate">{page.title}</p>
+                    <p className="text-xs text-muted-foreground">{page.page}</p>
+                  </div>
+                  <Badge variant={page.change.startsWith('+') ? 'default' : 'secondary'} className="text-xs">
+                    {page.change}
+                  </Badge>
+                </div>
+                <div className="grid grid-cols-3 gap-3 text-xs">
+                  <div>
+                    <p className="text-muted-foreground">Views</p>
+                    <p className="font-medium text-foreground">{page.views}</p>
+                  </div>
+                  <div>
+                    <p className="text-muted-foreground">Avg. Time</p>
+                    <p className="font-medium text-foreground">{page.avgTime}</p>
+                  </div>
+                  <div>
+                    <p className="text-muted-foreground">Exit Rate</p>
+                    <p className="font-medium text-foreground">{page.exitRate}</p>
+                  </div>
+                </div>
+              </motion.div>
+            ))}
+          </div>
+          
+          {/* Desktop Table View */}
+          <div className="hidden sm:block overflow-x-auto">
             <table className="w-full">
               <thead className="text-sm text-muted-foreground border-b border-border">
                 <tr>
@@ -520,31 +562,42 @@ export default function AnalyticsPage() {
               </thead>
               <tbody>
                 {topPages.map((page, index) => (
-                  <tr key={index} className="border-b border-border/50 hover:bg-muted/20 transition-colors">
+                  <motion.tr
+                    key={index}
+                    initial={{ opacity: 0, x: -20 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    transition={{ delay: 0.6 + index * 0.05 }}
+                    className="border-b border-border/50 hover:bg-muted/20 transition-colors"
+                  >
                     <td className="py-3 px-2">
-                      <div>
-                        <p className="text-sm font-medium text-foreground">{page.title}</p>
-                        <p className="text-xs text-muted-foreground">{page.page}</p>
+                      <div className="flex items-center gap-2">
+                        <FileText className="h-4 w-4 text-muted-foreground" />
+                        <div>
+                          <p className="font-medium text-foreground">{page.title}</p>
+                          <p className="text-xs text-muted-foreground">{page.page}</p>
+                        </div>
                       </div>
                     </td>
-                    <td className="text-right py-3 px-2 text-sm text-foreground">{page.views}</td>
-                    <td className="text-right py-3 px-2 text-sm text-foreground">{page.avgTime}</td>
+                    <td className="text-right py-3 px-2 font-medium">{page.views}</td>
+                    <td className="text-right py-3 px-2 text-muted-foreground">{page.avgTime}</td>
                     <td className="text-right py-3 px-2">
-                      <span className={`text-sm ${parseFloat(page.exitRate) > 50 ? 'text-red-500' : 'text-foreground'}`}>
+                      <Badge variant={parseFloat(page.exitRate) > 50 ? "destructive" : "secondary"}>
                         {page.exitRate}
-                      </span>
+                      </Badge>
                     </td>
                     <td className="text-right py-3 px-2">
-                      <span className={`text-sm ${page.change.startsWith('+') ? 'text-green-500' : 'text-red-500'}`}>
+                      <span className={`text-sm font-medium ${
+                        page.change.startsWith('+') ? 'text-green-500' : 'text-red-500'
+                      }`}>
                         {page.change}
                       </span>
                     </td>
                     <td className="text-right py-3 px-2">
-                      <Button variant="ghost" size="sm">
-                        <ExternalLink className="h-4 w-4" />
+                      <Button variant="outline" size="sm">
+                        <ExternalLink className="h-3 w-3" />
                       </Button>
                     </td>
-                  </tr>
+                  </motion.tr>
                 ))}
               </tbody>
             </table>

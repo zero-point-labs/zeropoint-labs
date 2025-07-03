@@ -222,32 +222,32 @@ export default function FormsPage() {
   };
 
   return (
-    <div className="space-y-8 p-6 lg:p-8">
+    <div className="space-y-6 sm:space-y-8 p-4 sm:p-6 lg:p-8">
       {/* Header */}
-      <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
+      <div className="flex flex-col gap-4">
         <div>
-          <h1 className="text-3xl font-light text-foreground mb-2">Form Submissions</h1>
-          <p className="text-muted-foreground">Manage form submissions and CRM integration</p>
+          <h1 className="text-2xl sm:text-3xl font-light text-foreground mb-2">Form Submissions</h1>
+          <p className="text-sm sm:text-base text-muted-foreground">Manage form submissions and CRM integration</p>
         </div>
-        <div className="flex items-center gap-3">
+        <div className="flex flex-col sm:flex-row sm:items-center gap-3">
           {selectedSubmissions.length > 0 && (
             <Button 
               onClick={handleBulkPush}
-              className="bg-orange-500 hover:bg-orange-600 text-white"
+              className="bg-orange-500 hover:bg-orange-600 text-white text-sm"
             >
-              <Send className="h-4 w-4 mr-2" />
+              <Send className="h-3 w-3 sm:h-4 sm:w-4 mr-2" />
               Push Selected ({selectedSubmissions.length})
             </Button>
           )}
-          <Button variant="outline" onClick={handleExportCSV}>
-            <Download className="h-4 w-4 mr-2" />
+          <Button variant="outline" onClick={handleExportCSV} className="text-sm">
+            <Download className="h-3 w-3 sm:h-4 sm:w-4 mr-2" />
             Export CSV
           </Button>
         </div>
       </div>
 
       {/* Stats */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
         {formStats.map((stat, index) => {
           const Icon = stat.icon;
           return (
@@ -257,14 +257,14 @@ export default function FormsPage() {
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: index * 0.1 }}
             >
-              <DashboardCard className="p-4" interactive glow>
+              <DashboardCard className="p-3 sm:p-4" interactive glow>
                 <div className="flex items-center justify-between">
-                  <div>
-                    <p className="text-xs text-muted-foreground mb-1">{stat.label}</p>
-                    <p className="text-2xl font-semibold text-foreground">{stat.value}</p>
+                  <div className="flex-1 min-w-0">
+                    <p className="text-xs text-muted-foreground mb-1 truncate">{stat.label}</p>
+                    <p className="text-lg sm:text-2xl font-semibold text-foreground">{stat.value}</p>
                     <p className="text-xs text-muted-foreground mt-1">{stat.change}</p>
                   </div>
-                  <Icon className="h-8 w-8 text-orange-400" />
+                  <Icon className="h-6 w-6 sm:h-8 sm:w-8 text-orange-400 flex-shrink-0" />
                 </div>
               </DashboardCard>
             </motion.div>
@@ -273,7 +273,7 @@ export default function FormsPage() {
       </div>
 
       {/* Search and Filters */}
-      <div className="flex flex-col lg:flex-row gap-4">
+      <div className="flex flex-col gap-3">
         <div className="relative flex-1">
           <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
           <input
@@ -281,15 +281,15 @@ export default function FormsPage() {
             placeholder="Search by name, email, or form type..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="w-full pl-10 pr-4 py-2 bg-muted/30 border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500/50 text-foreground"
+            className="w-full pl-10 pr-4 py-2 bg-muted/30 border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500/50 text-foreground text-sm"
           />
         </div>
-        <div className="flex items-center gap-2 bg-muted/30 rounded-lg p-1">
+        <div className="flex items-center gap-2 bg-muted/30 rounded-lg p-1 overflow-x-auto">
           {formTypes.map((type) => (
             <button
               key={type}
               onClick={() => setSelectedForm(type)}
-              className={`px-4 py-1.5 rounded-md text-sm font-medium transition-all ${
+              className={`px-3 sm:px-4 py-1.5 rounded-md text-xs sm:text-sm font-medium transition-all whitespace-nowrap ${
                 selectedForm === type
                   ? "bg-orange-500 text-white"
                   : "text-muted-foreground hover:text-foreground hover:bg-muted/50"
@@ -301,14 +301,79 @@ export default function FormsPage() {
         </div>
       </div>
 
-      {/* Submissions Table */}
+      {/* Submissions Table/Cards */}
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.2 }}
       >
         <DashboardCard>
-          <div className="overflow-x-auto">
+          {/* Mobile Card View */}
+          <div className="block md:hidden space-y-3">
+            {filteredSubmissions.map((submission, index) => (
+              <motion.div
+                key={submission.id}
+                initial={{ opacity: 0, x: -20 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ delay: index * 0.05 }}
+                className="p-4 rounded-lg bg-muted/20 border border-border/30"
+                onClick={() => handleRowClick(submission)}
+              >
+                <div className="flex items-start justify-between mb-3">
+                  <div className="flex items-start gap-3">
+                    <input
+                      type="checkbox"
+                      checked={selectedSubmissions.includes(submission.id)}
+                      onChange={(e) => {
+                        e.stopPropagation();
+                        if (e.target.checked) {
+                          setSelectedSubmissions([...selectedSubmissions, submission.id]);
+                        } else {
+                          setSelectedSubmissions(selectedSubmissions.filter(id => id !== submission.id));
+                        }
+                      }}
+                      onClick={(e) => e.stopPropagation()}
+                      className="rounded border-border mt-1"
+                    />
+                    <div className="flex-1 min-w-0">
+                      <p className="font-medium text-foreground">{submission.name}</p>
+                      <p className="text-xs text-muted-foreground">{submission.email}</p>
+                    </div>
+                  </div>
+                  <Badge variant="secondary" className="text-xs">{submission.formName}</Badge>
+                </div>
+                <div className="flex items-center justify-between">
+                  <p className="text-xs text-muted-foreground">
+                    {formatDate(submission.submittedAt)}
+                  </p>
+                  <div onClick={(e) => e.stopPropagation()}>
+                    {submission.pushedToCrm ? (
+                      <Badge className="bg-green-500/20 text-green-400 border-0 text-xs">
+                        <CheckCircle className="h-3 w-3 mr-1" />
+                        Sent
+                      </Badge>
+                    ) : (
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handlePushToCrm(submission.id);
+                        }}
+                        className="text-orange-500 border-orange-500/30 hover:bg-orange-500/10 h-7 text-xs"
+                      >
+                        <RotateCcw className="h-3 w-3 mr-1" />
+                        Push
+                      </Button>
+                    )}
+                  </div>
+                </div>
+              </motion.div>
+            ))}
+          </div>
+
+          {/* Desktop Table View */}
+          <div className="hidden md:block overflow-x-auto">
             <table className="w-full">
               <thead className="text-sm text-muted-foreground border-b border-border">
                 <tr>
