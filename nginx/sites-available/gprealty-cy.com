@@ -28,9 +28,9 @@ server {
     # Security headers
     add_header Strict-Transport-Security "max-age=63072000" always;
 
-    # Proxy to Template Next.js app
+    # Proxy to Template Next.js app (using actual container name)
     location / {
-        proxy_pass http://template-app:3001;
+        proxy_pass http://gprealty-cyprus-app:3001;
         proxy_http_version 1.1;
         proxy_set_header Upgrade $http_upgrade;
         proxy_set_header Connection 'upgrade';
@@ -44,13 +44,13 @@ server {
 
     # Cache static assets
     location /_next/static/ {
-        proxy_pass http://template-app:3001;
+        proxy_pass http://gprealty-cyprus-app:3001;
         expires 1y;
         add_header Cache-Control "public, immutable";
     }
 
     location ~* \.(jpg|jpeg|png|gif|ico|css|js|woff|woff2)$ {
-        proxy_pass http://template-app:3001;
+        proxy_pass http://gprealty-cyprus-app:3001;
         expires 1y;
         add_header Cache-Control "public, immutable";
     }

@@ -103,10 +103,10 @@ echo "🧪 Step 6: Testing the deployments..."
 
 echo "Testing local connectivity:"
 echo "- Testing zeropoint app connection:"
-docker exec multi-site-nginx curl -s -o /dev/null -w "%{http_code}" http://zeropoint-app:3000 || echo "Failed"
+docker exec multi-site-nginx curl -s -o /dev/null -w "%{http_code}" http://zeropoint-labs-app:3000 || echo "Failed"
 
 echo "- Testing template app connection:"
-docker exec multi-site-nginx curl -s -o /dev/null -w "%{http_code}" http://template-app:3001 || echo "Failed"
+docker exec multi-site-nginx curl -s -o /dev/null -w "%{http_code}" http://gprealty-cyprus-app:3001 || echo "Failed"
 
 echo ""
 echo "Testing external access:"

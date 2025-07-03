@@ -28,9 +28,9 @@ server {
     # Security headers
     add_header Strict-Transport-Security "max-age=63072000" always;
 
-    # Proxy to Zeropoint Next.js app
+    # Proxy to Zeropoint Next.js app (using actual container name)
     location / {
-        proxy_pass http://zeropoint-app:3000;
+        proxy_pass http://zeropoint-labs-app:3000;
         proxy_http_version 1.1;
         proxy_set_header Upgrade $http_upgrade;
         proxy_set_header Connection 'upgrade';
@@ -44,13 +44,13 @@ server {
 
     # Cache static assets
     location /_next/static/ {
-        proxy_pass http://zeropoint-app:3000;
+        proxy_pass http://zeropoint-labs-app:3000;
         expires 1y;
         add_header Cache-Control "public, immutable";
     }
 
     location ~* \.(jpg|jpeg|png|gif|ico|css|js|woff|woff2)$ {
-        proxy_pass http://zeropoint-app:3000;
+        proxy_pass http://zeropoint-labs-app:3000;
         expires 1y;
         add_header Cache-Control "public, immutable";
     }
