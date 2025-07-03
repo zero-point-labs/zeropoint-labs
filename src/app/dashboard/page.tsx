@@ -10,6 +10,7 @@ import {
   ArrowDownRight
 } from "lucide-react";
 import { DashboardCard, DashboardStatCard } from "@/components/ui/dashboard-card";
+import { CRMDashboard } from "@/components/ui/crm-components";
 
 const stats = [
   {
@@ -169,6 +170,15 @@ export default function DashboardPage() {
             </button>
           </div>
         </DashboardCard>
+      </motion.div>
+
+      {/* CRM Section */}
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.7 }}
+      >
+        <CRMDashboard />
       </motion.div>
     </div>
   );

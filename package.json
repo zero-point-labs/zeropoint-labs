@@ -6,7 +6,10 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "next lint"
+    "lint": "next lint",
+    "setup-analytics": "node scripts/setup-appwrite-analytics.js",
+    "validate-analytics": "node scripts/validate-setup.js",
+    "test-setup": "node scripts/validate-setup.js"
   },
   "dependencies": {
     "@radix-ui/react-avatar": "^1.1.10",
@@ -23,6 +26,7 @@
     "lucide-react": "^0.515.0",
     "motion": "^12.18.1",
     "next": "15.3.3",
+    "node-appwrite": "^17.0.0",
     "ogl": "^1.0.11",
     "react": "^19.0.0",
     "react-dom": "^19.0.0",

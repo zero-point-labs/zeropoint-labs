@@ -17,7 +17,9 @@ import {
   LogOut,
   Puzzle,
   ChevronLeft,
-  ChevronRight
+  ChevronRight,
+  Database,
+  Users
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { ThemeToggle } from "@/components/ui/theme-toggle";
@@ -39,6 +41,12 @@ const navItems: NavItem[] = [
     description: "Dashboard overview"
   },
   {
+    href: "/dashboard/setup",
+    label: "Setup",
+    icon: Database,
+    description: "Analytics configuration"
+  },
+  {
     href: "/dashboard/analytics",
     label: "Analytics",
     icon: BarChart3,
@@ -55,6 +63,12 @@ const navItems: NavItem[] = [
     label: "Forms",
     icon: FileText,
     description: "Form submissions"
+  },
+  {
+    href: "/dashboard/crm",
+    label: "CRM",
+    icon: Users,
+    description: "Customer management"
   },
   {
     href: "/dashboard/integrations",

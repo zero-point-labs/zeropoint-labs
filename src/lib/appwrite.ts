@@ -1,4 +1,4 @@
-import { Client, Account, Databases, OAuthProvider } from 'appwrite';
+import { Client, Account, Databases, OAuthProvider, Query } from 'appwrite';
 
 // Initialize Appwrite client
 const client = new Client();
@@ -15,6 +15,14 @@ export const databases = new Databases(client);
 export const GoogleOAuth = OAuthProvider.Google;
 
 export { client };
+
+// Database and Collection IDs
+export const DATABASE_ID = 'crm_database';
+export const COLLECTIONS = {
+  CUSTOMERS: 'customers',
+  CRM_CONFIGURATIONS: 'crm_configurations',
+  FIELD_CONFIGS: 'field_configs'
+};
 
 // Helper function to check if user is logged in
 export const getCurrentUser = async () => {
@@ -71,4 +79,194 @@ export const logout = async () => {
     console.error('Logout error:', error);
     throw error;
   }
+};
+
+// Test session function (keeping existing implementation)
+export const testSession = async () => {
+  try {
+    const user = await getCurrentUser();
+    return {
+      isAuthenticated: !!user,
+      user: user ? {
+        id: user.$id,
+        name: user.name,
+        email: user.email,
+        emailVerification: user.emailVerification
+      } : null,
+      timestamp: new Date().toISOString()
+    };
+  } catch (error) {
+    return {
+      isAuthenticated: false,
+      error: error instanceof Error ? error.message : 'Unknown error',
+      timestamp: new Date().toISOString()
+    };
+  }
+};
+
+// Refresh session function (keeping existing implementation)
+export const refreshSession = async () => {
+  try {
+    return await getCurrentUser();
+  } catch (error) {
+    console.error('Session refresh error:', error);
+    return null;
+  }
+};
+
+// ===== CRM DATABASE OPERATIONS =====
+
+// Customer operations
+export const createCustomer = async (customerData: any, userId: string) => {
+  try {
+    const response = await databases.createDocument(
+      DATABASE_ID,
+      COLLECTIONS.CUSTOMERS,
+      'unique()',
+      {
+        ...customerData,
+        user_id: userId,
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString()
+      }
+    );
+    return response;
+  } catch (error) {
+    console.error('Error creating customer:', error);
+    throw error;
+  }
+};
+
+export const getCustomers = async (userId: string) => {
+  try {
+    const response = await databases.listDocuments(
+      DATABASE_ID,
+      COLLECTIONS.CUSTOMERS,
+      [
+        Query.equal('user_id', userId),
+        Query.orderDesc('created_at'),
+        Query.limit(1000) // Adjust as needed
+      ]
+    );
+    return response.documents;
+  } catch (error) {
+    console.error('Error fetching customers:', error);
+    throw error;
+  }
+};
+
+export const updateCustomer = async (customerId: string, customerData: any, userId: string) => {
+  try {
+    // Remove user_id from update data to prevent overwriting
+    const { user_id, ...updateData } = customerData;
+    const response = await databases.updateDocument(
+      DATABASE_ID,
+      COLLECTIONS.CUSTOMERS,
+      customerId,
+      {
+        ...updateData,
+        updated_at: new Date().toISOString()
+      }
+    );
+    return response;
+  } catch (error) {
+    console.error('Error updating customer:', error);
+    throw error;
+  }
+};
+
+export const deleteCustomer = async (customerId: string) => {
+  try {
+    await databases.deleteDocument(
+      DATABASE_ID,
+      COLLECTIONS.CUSTOMERS,
+      customerId
+    );
+    return true;
+  } catch (error) {
+    console.error('Error deleting customer:', error);
+    throw error;
+  }
+};
+
+// CRM Configuration operations
+export const saveCRMConfiguration = async (userId: string, configData: any) => {
+  try {
+    // Check if configuration exists
+    const existing = await databases.listDocuments(
+      DATABASE_ID,
+      COLLECTIONS.CRM_CONFIGURATIONS,
+      [Query.equal('user_id', userId)]
+    );
+
+    const configToSave = {
+      user_id: userId,
+      fields: JSON.stringify(configData.fields || []),
+      columns: JSON.stringify(configData.columns || []),
+      dashboard_cards: JSON.stringify(configData.dashboardCards || []),
+      updated_at: new Date().toISOString()
+    };
+
+    if (existing.documents.length > 0) {
+      // Update existing configuration
+      return await databases.updateDocument(
+        DATABASE_ID,
+        COLLECTIONS.CRM_CONFIGURATIONS,
+        existing.documents[0].$id,
+        configToSave
+      );
+    } else {
+      // Create new configuration
+      return await databases.createDocument(
+        DATABASE_ID,
+        COLLECTIONS.CRM_CONFIGURATIONS,
+        'unique()',
+        {
+          ...configToSave,
+          created_at: new Date().toISOString()
+        }
+      );
+    }
+  } catch (error) {
+    console.error('Error saving CRM configuration:', error);
+    throw error;
+  }
+};
+
+export const getCRMConfiguration = async (userId: string) => {
+  try {
+    const response = await databases.listDocuments(
+      DATABASE_ID,
+      COLLECTIONS.CRM_CONFIGURATIONS,
+      [Query.equal('user_id', userId)]
+    );
+
+    if (response.documents.length > 0) {
+      const config = response.documents[0];
+      return {
+        fields: JSON.parse(config.fields || '[]'),
+        columns: JSON.parse(config.columns || '[]'),
+        dashboardCards: JSON.parse(config.dashboard_cards || '[]')
+      };
+    }
+    return null;
+  } catch (error) {
+    console.error('Error fetching CRM configuration:', error);
+    throw error;
+  }
+};
+
+// Real-time subscriptions
+export const subscribeToCustomers = (userId: string, callback: (payload: any) => void) => {
+  return client.subscribe(
+    `databases.${DATABASE_ID}.collections.${COLLECTIONS.CUSTOMERS}.documents`,
+    callback
+  );
+};
+
+export const subscribeToCRMConfig = (userId: string, callback: (payload: any) => void) => {
+  return client.subscribe(
+    `databases.${DATABASE_ID}.collections.${COLLECTIONS.CRM_CONFIGURATIONS}.documents`,
+    callback
+  );
 }; 

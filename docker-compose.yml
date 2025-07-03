@@ -9,6 +9,8 @@ services:
     environment:
       - NODE_ENV=production
       - PORT=3000
+      - NEXT_PUBLIC_APPWRITE_ENDPOINT=https://cloud.appwrite.io/v1
+      - NEXT_PUBLIC_APPWRITE_PROJECT_ID=6861736a0007a58bac63
     networks:
       - app-network
 

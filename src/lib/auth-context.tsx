@@ -1,7 +1,7 @@
 "use client";
 
 import React, { createContext, useContext, useState, useEffect } from 'react';
-import { getCurrentUser, logout as appwriteLogout } from './appwrite';
+import { getCurrentUser, logout as appwriteLogout, testSession, refreshSession } from './appwrite';
 
 // Types
 interface User {
@@ -19,6 +19,8 @@ interface AuthContextType {
   login: (user: User) => void;
   logout: () => Promise<void>;
   setDemoMode: (enabled: boolean) => void;
+  testAuthSession: () => Promise<any>;
+  refreshAuthSession: () => Promise<User | null>;
 }
 
 // Demo user for demo mode
@@ -117,13 +119,55 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
   };
 
+  // Test session establishment (for debugging)
+  const testAuthSession = async () => {
+    if (isDemoMode) {
+      return { isDemoMode: true, user: DEMO_USER };
+    }
+    
+    const sessionTest = await testSession();
+    return {
+      ...sessionTest,
+      isDemoMode: false,
+      contextUser: user ? { id: user.$id, email: user.email } : null
+    };
+  };
+
+  // Refresh session (useful for OAuth flows)
+  const refreshAuthSession = async () => {
+    if (isDemoMode) {
+      return DEMO_USER;
+    }
+    
+    try {
+      const refreshedUser = await refreshSession();
+      if (refreshedUser) {
+        const userData = {
+          $id: refreshedUser.$id,
+          name: refreshedUser.name,
+          email: refreshedUser.email,
+          emailVerification: refreshedUser.emailVerification,
+          prefs: refreshedUser.prefs
+        };
+        setUser(userData);
+        return userData;
+      }
+      return null;
+    } catch (error) {
+      console.error('Session refresh error:', error);
+      return null;
+    }
+  };
+
   const value: AuthContextType = {
     user,
     isLoading,
     isDemoMode,
     login,
     logout,
-    setDemoMode
+    setDemoMode,
+    testAuthSession,
+    refreshAuthSession
   };
 
   return (
