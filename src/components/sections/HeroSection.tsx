@@ -458,11 +458,23 @@ export default function HeroSection() {
           animate="visible"
         >
           <motion.div variants={itemVariants} className="flex items-center gap-3">
-            <Avatar className="w-10 h-10 border-2 border-orange-500/60 shadow-lg">
-              <AvatarFallback className="bg-orange-600/20 text-orange-400 text-lg">
+            <div className={`relative w-10 h-10 rounded-full overflow-hidden border-2 border-orange-500/60 shadow-lg flex items-center justify-center ${
+              theme === 'light' 
+                ? 'bg-orange-50/80 shadow-orange-200/60' 
+                : 'bg-orange-950/60 shadow-orange-900/60'
+            }`}>
+              <span 
+                className="text-2xl leading-none"
+                style={{
+                  fontFamily: '"Apple Color Emoji", "Segoe UI Emoji", "Noto Color Emoji", "Android Emoji", "EmojiSymbols", "EmojiOne Mozilla", "Twemoji Mozilla", "Segoe UI Symbol", "Noto Emoji", emoji',
+                  fontSize: '24px',
+                  lineHeight: '1',
+                  display: 'inline-block'
+                }}
+              >
                 🇨🇾
-              </AvatarFallback>
-            </Avatar>
+              </span>
+            </div>
             <Badge
               variant="outline"
               className={`border-orange-500/70 text-orange-400 px-5 py-2 text-sm font-semibold rounded-full shadow-md ${
@@ -511,81 +523,142 @@ export default function HeroSection() {
             </div>
           </motion.div>
 
-          <motion.p
-            variants={itemVariants}
-            className={`max-w-2xl text-base sm:text-lg md:text-xl leading-relaxed font-medium ${
-              theme === 'light' ? 'text-slate-700' : 'text-slate-300/90'
-            }`}
-          >
-            Transform your ideas into high-converting websites. We handle the complete journey from design to deployment, ensuring your online presence drives real results.
-          </motion.p>
-
+          <motion.div variants={itemVariants} className="space-y-4">
+            <p className={`max-w-2xl text-sm sm:text-base md:text-lg leading-relaxed ${
+              theme === 'light' ? 'text-slate-600' : 'text-slate-300/90'
+            }`}>
+              Transform your ideas into <span className="font-semibold text-orange-500">high-converting websites</span> that drive real results.
+            </p>
+            
+            <div className="flex flex-col sm:flex-row items-center justify-center gap-2 sm:gap-6 text-sm">
+              <div className="flex items-center gap-2">
+                <CheckCircle className="w-4 h-4 text-green-500 flex-shrink-0" />
+                <span className={theme === 'light' ? 'text-slate-700' : 'text-slate-300'}>Design to Deployment</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <CheckCircle className="w-4 h-4 text-green-500 flex-shrink-0" />
+                <span className={theme === 'light' ? 'text-slate-700' : 'text-slate-300'}>SEO Optimized</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <CheckCircle className="w-4 h-4 text-green-500 flex-shrink-0" />
+                <span className={theme === 'light' ? 'text-slate-700' : 'text-slate-300'}>AI-Powered Features</span>
+              </div>
+            </div>
+          </motion.div>
+          
+          {/* Theme Toggle - Centered with context */}
           <motion.div
             variants={itemVariants}
-            className="flex items-center justify-center"
+            className="flex flex-col items-center gap-3 pt-2"
           >
+            <div className="flex items-center gap-2">
+              <div className={`flex items-center gap-1 ${theme === 'light' ? 'text-slate-500' : 'text-slate-400'}`}>
+                <Sun className="w-3 h-3" />
+                <span className="text-xs font-medium">Light</span>
+              </div>
+              <div className={`w-px h-3 ${theme === 'light' ? 'bg-slate-300' : 'bg-slate-600'}`} />
+              <div className={`flex items-center gap-1 ${theme === 'light' ? 'text-slate-500' : 'text-slate-400'}`}>
+                <Moon className="w-3 h-3" />
+                <span className="text-xs font-medium">Dark</span>
+              </div>
+            </div>
+            
             <motion.button
               onClick={() => {
                 toggleTheme();
               }}
-              className={`relative flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-medium transition-all duration-300 border ${
+              className={`group relative flex items-center gap-3 px-5 py-2.5 rounded-full text-sm font-medium transition-all duration-300 border ${
                 theme === 'light' 
-                  ? 'bg-white/90 border-slate-300/60 text-slate-600 hover:border-orange-400/60 hover:bg-orange-50/80' 
-                  : 'bg-neutral-800/90 border-neutral-600/60 text-slate-400 hover:border-orange-500/60 hover:bg-orange-950/50'
-              } shadow-sm hover:shadow-md backdrop-blur-sm`}
-              whileHover={{ scale: 1.02 }}
-              whileTap={{ scale: 0.98 }}
+                  ? 'bg-orange-50/80 border-orange-300/60 text-slate-700 hover:border-orange-400/80 hover:bg-orange-100/80' 
+                  : 'bg-orange-950/60 border-orange-600/60 text-slate-300 hover:border-orange-500/80 hover:bg-orange-900/60'
+              } shadow-md hover:shadow-lg backdrop-blur-sm`}
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
             >
-              {theme === 'light' ? (
-                <>
-                  <Moon className="w-3.5 h-3.5" />
-                  <span>Dark</span>
-                </>
-              ) : (
-                <>
-                  <Sun className="w-3.5 h-3.5" />
-                  <span>Light</span>
-                </>
-              )}
+              <div className="flex items-center gap-2">
+                {theme === 'light' ? (
+                  <>
+                    <div className="relative">
+                      <Sun className="w-4 h-4 text-orange-500" />
+                      <div className="absolute inset-0 animate-pulse">
+                        <Sun className="w-4 h-4 text-orange-300" />
+                      </div>
+                    </div>
+                    <span>Switch to Dark</span>
+                  </>
+                ) : (
+                  <>
+                    <div className="relative">
+                      <Moon className="w-4 h-4 text-blue-400" />
+                      <div className="absolute inset-0 animate-pulse">
+                        <Moon className="w-4 h-4 text-blue-300" />
+                      </div>
+                    </div>
+                    <span>Switch to Light</span>
+                  </>
+                )}
+              </div>
+              <div className={`w-2 h-2 rounded-full transition-all duration-300 ${
+                theme === 'light' ? 'bg-orange-400' : 'bg-blue-400'
+              } group-hover:scale-125`} />
             </motion.button>
           </motion.div>
           
-          <motion.div variants={itemVariants} className="w-full max-w-lg pt-1 pb-2 md:pt-2 md:pb-3">
-              <Separator className={theme === 'light' ? 'bg-slate-300/80' : 'bg-neutral-700/80'} />
-          </motion.div>
-
           <motion.div
             variants={itemVariants}
-            className="flex flex-col sm:flex-row items-center justify-center gap-4 sm:gap-5"
+            className="flex flex-col sm:flex-row items-center justify-center gap-4 sm:gap-4 pt-8"
           >
             <Link href="/start-project">
               <Button
                 size="lg" 
-                className="group relative overflow-hidden bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-400 hover:to-orange-500 text-white font-bold py-4 px-8 text-base shadow-xl shadow-orange-500/30 hover:shadow-orange-500/50 transition-all duration-300 ease-in-out transform hover:scale-[1.02] border-0"
+                className="group relative overflow-hidden bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 text-white font-semibold py-5 px-10 text-base shadow-2xl shadow-orange-500/25 hover:shadow-orange-500/40 transition-all duration-300 ease-in-out transform hover:scale-[1.03] hover:-translate-y-0.5 border-0 rounded-xl"
               >
-                <span className="flex items-center relative z-10">
+                <span className="absolute inset-0 bg-gradient-to-r from-orange-400 to-transparent opacity-0 group-hover:opacity-30 transition-opacity duration-300"></span>
+                <span className="flex items-center relative z-10 gap-2">
+                  <Sparkles className="w-5 h-5 group-hover:rotate-12 transition-transform duration-300" />
                   Get Your Website Built
-                  <ArrowRight className="w-5 h-5 ml-2 transition-transform duration-300 group-hover:translate-x-1" />
+                  <ArrowRight className="w-5 h-5 transition-transform duration-300 group-hover:translate-x-1" />
                 </span>
-                <div className="absolute inset-0 bg-gradient-to-r from-white/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
               </Button>
             </Link>
             <Link href="/portfolio">
               <Button
                 size="lg"
                 variant="outline"
-                className={`group font-semibold py-4 px-8 text-base shadow-lg transition-all duration-300 ease-in-out transform hover:scale-[1.02] ${
+                className={`group relative font-semibold py-5 px-10 text-base shadow-lg transition-all duration-300 ease-in-out transform hover:scale-[1.03] hover:-translate-y-0.5 rounded-xl border-2 ${
                   theme === 'light'
-                    ? 'text-slate-700 border-slate-300 hover:border-orange-500/90 hover:bg-orange-500/10 hover:text-orange-600 shadow-slate-200/40 hover:shadow-orange-500/20'
-                    : 'text-slate-300 border-slate-600 hover:border-orange-500/90 hover:bg-orange-500/10 hover:text-orange-400 shadow-black/20 hover:shadow-orange-500/20'
+                    ? 'text-slate-700 border-slate-300 hover:border-orange-500 hover:bg-gradient-to-r hover:from-orange-50 hover:to-orange-100 hover:text-orange-700 shadow-slate-200/40 hover:shadow-orange-500/30'
+                    : 'text-slate-300 border-slate-600 hover:border-orange-500 hover:bg-gradient-to-r hover:from-orange-950/30 hover:to-orange-900/30 hover:text-orange-400 shadow-black/20 hover:shadow-orange-500/30'
                 }`}
               >
-                <span className="flex items-center">
+                <span className="flex items-center gap-2">
+                  <Briefcase className="w-5 h-5 transition-all duration-300 group-hover:scale-110" />
                   View Our Work
-                  <Briefcase className="w-5 h-5 ml-2 opacity-80 group-hover:opacity-100 transition-opacity duration-300" />
+                  <span className="ml-1 opacity-0 group-hover:opacity-100 transition-opacity duration-300">→</span>
                 </span>
               </Button>
             </Link>
+          </motion.div>
+
+          {/* Scroll Indicator */}
+          <motion.div
+            variants={itemVariants}
+            className="pt-8 md:pt-12"
+            animate={{
+              y: [0, 8, 0],
+            }}
+            transition={{
+              duration: 2,
+              repeat: Infinity,
+              ease: "easeInOut",
+            }}
+          >
+            <div className={`flex flex-col items-center gap-2 ${
+              theme === 'light' ? 'text-slate-400' : 'text-slate-500'
+            }`}>
+              <span className="text-xs font-medium uppercase tracking-wider">Explore More</span>
+              <ChevronDown className="w-5 h-5" />
+            </div>
           </motion.div>
         </motion.div>
       </div>
