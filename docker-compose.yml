@@ -1,24 +1,36 @@
 services:
-  # GP.Realty Cyprus Next.js Application
-  gprealty-app:
+  # Zero Point Labs Next.js Application
+  zeropoint-app:
     build:
       context: .
       dockerfile: Dockerfile
-    container_name: gprealty-app
+    container_name: zeropoint-labs-app
+    restart: unless-stopped
+    environment:
+      - NODE_ENV=production
+      - PORT=3000
+      - NEXT_PUBLIC_APPWRITE_ENDPOINT=https://cloud.appwrite.io/v1
+      - NEXT_PUBLIC_APPWRITE_PROJECT_ID=6861736a0007a58bac63
+    networks:
+      - app-network
+
+  # GP Realty Cyprus Next.js Application
+  template-app:
+    build:
+      context: ../simple-template-first copy
+      dockerfile: Dockerfile
+    container_name: gprealty-cyprus-app
     restart: unless-stopped
     environment:
       - NODE_ENV=production
       - PORT=3001
-      - NEXT_TELEMETRY_DISABLED=1
-    expose:
-      - "3001"
     networks:
-      - gprealty-network
+      - app-network
 
   # Nginx Reverse Proxy
   nginx:
     image: nginx:alpine
-    container_name: gprealty-nginx
+    container_name: multi-site-nginx
     restart: unless-stopped
     ports:
       - "80:80"
@@ -30,14 +42,15 @@ services:
       - ./certbot/conf:/etc/letsencrypt
       - ./certbot/www:/var/www/certbot
     networks:
-      - gprealty-network
+      - app-network
     depends_on:
-      - gprealty-app
+      - zeropoint-app
+      - template-app
 
   # Certbot for SSL
   certbot:
     image: certbot/certbot
-    container_name: gprealty-certbot
+    container_name: multi-site-certbot
     restart: unless-stopped
     volumes:
       - ./certbot/conf:/etc/letsencrypt
@@ -45,5 +58,5 @@ services:
     entrypoint: "/bin/sh -c 'trap exit TERM; while :; do certbot renew; sleep 12h & wait $${!}; done;'"
 
 networks:
-  gprealty-network:
+  app-network:
     driver: bridge 

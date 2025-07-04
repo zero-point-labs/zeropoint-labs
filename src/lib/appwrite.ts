@@ -114,6 +114,65 @@ export const refreshSession = async () => {
   }
 };
 
+// Check Appwrite cookies function (missing implementation)
+export const checkAppwriteCookies = () => {
+  if (typeof window === 'undefined') {
+    return { hasSessionCookie: false, allCookies: [] };
+  }
+  
+  const cookies = document.cookie.split(';').map(cookie => cookie.trim());
+  const sessionCookie = cookies.find(cookie => 
+    cookie.startsWith('a_session_') || 
+    cookie.startsWith('a_session=') ||
+    cookie.includes('session')
+  );
+  
+  return {
+    hasSessionCookie: !!sessionCookie,
+    allCookies: cookies.map(cookie => {
+      const [name, value] = cookie.split('=');
+      return { name: name?.trim(), value: value?.trim() };
+    })
+  };
+};
+
+// Ensure session function (missing implementation)
+export const ensureSession = async () => {
+  try {
+    // Check if we have URL parameters from OAuth callback
+    const urlParams = new URLSearchParams(window.location.search);
+    const hashParams = new URLSearchParams(window.location.hash.replace('#', ''));
+    
+    // Check for OAuth callback parameters
+    const userId = urlParams.get('userId') || hashParams.get('userId');
+    const secret = urlParams.get('secret') || hashParams.get('secret');
+    
+    if (userId && secret) {
+      console.log('OAuth callback detected, creating session...');
+      
+      // Create session using OAuth callback parameters
+      const session = await account.createSession(userId, secret);
+      console.log('Session created:', session);
+      
+      // Get user data
+      const user = await getCurrentUser();
+      console.log('User authenticated:', user);
+      
+      // Clean up URL parameters
+      const cleanUrl = window.location.pathname;
+      window.history.replaceState({}, document.title, cleanUrl);
+      
+      return user;
+    }
+    
+    // If no OAuth params, try to get existing session
+    return await getCurrentUser();
+  } catch (error) {
+    console.error('Session establishment error:', error);
+    return null;
+  }
+};
+
 // ===== CRM DATABASE OPERATIONS =====
 
 // Customer operations
