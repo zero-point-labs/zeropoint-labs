@@ -4,8 +4,8 @@ import { Client, Account, Databases, OAuthProvider, Query } from 'appwrite';
 const client = new Client();
 
 client
-  .setEndpoint('https://cloud.appwrite.io/v1') // Appwrite Cloud endpoint
-  .setProject('6861736a0007a58bac63'); // Your project ID
+  .setEndpoint(process.env.NEXT_PUBLIC_APPWRITE_ENDPOINT || 'https://cloud.appwrite.io/v1') // Use environment variable
+  .setProject(process.env.NEXT_PUBLIC_APPWRITE_PROJECT_ID || '6861736a0007a58bac63'); // Use environment variable
 
 // Initialize services
 export const account = new Account(client);
