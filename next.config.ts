@@ -11,7 +11,7 @@ const nextConfig: NextConfig = {
     // your project has type errors.
     ignoreBuildErrors: true,
   },
-  output: 'standalone',
+  // Removed standalone output - not needed for Vercel
 };
 
 export default nextConfig;
