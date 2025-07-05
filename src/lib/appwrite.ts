@@ -21,7 +21,10 @@ export const DATABASE_ID = 'crm_database';
 export const COLLECTIONS = {
   CUSTOMERS: 'customers',
   CRM_CONFIGURATIONS: 'crm_configurations',
-  FIELD_CONFIGS: 'field_configs'
+  FIELD_CONFIGS: 'field_configs',
+  // Analytics collections
+  WEBSITES: 'websites',
+  EVENTS: 'events'
 };
 
 // Helper function to check if user is logged in
@@ -328,4 +331,233 @@ export const subscribeToCRMConfig = (userId: string, callback: (payload: any) =>
     `databases.${DATABASE_ID}.collections.${COLLECTIONS.CRM_CONFIGURATIONS}.documents`,
     callback
   );
+};
+
+// ===== ANALYTICS DATABASE OPERATIONS =====
+
+// Website operations
+export const createWebsite = async (websiteData: {
+  domain: string;
+  userId: string;
+  verified?: boolean;
+}) => {
+  try {
+    const response = await databases.createDocument(
+      DATABASE_ID,
+      COLLECTIONS.WEBSITES,
+      'unique()',
+      {
+        domain: websiteData.domain,
+        userId: websiteData.userId,
+        verified: websiteData.verified || false,
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString()
+      }
+    );
+    return response;
+  } catch (error) {
+    console.error('Error creating website:', error);
+    throw error;
+  }
+};
+
+export const getWebsites = async (userId: string) => {
+  try {
+    const response = await databases.listDocuments(
+      DATABASE_ID,
+      COLLECTIONS.WEBSITES,
+      [
+        Query.equal('userId', userId),
+        Query.orderDesc('createdAt')
+      ]
+    );
+    return response.documents;
+  } catch (error) {
+    console.error('Error fetching websites:', error);
+    throw error;
+  }
+};
+
+export const updateWebsite = async (websiteId: string, websiteData: any, userId: string) => {
+  try {
+    const response = await databases.updateDocument(
+      DATABASE_ID,
+      COLLECTIONS.WEBSITES,
+      websiteId,
+      {
+        ...websiteData,
+        userId: userId,
+        updatedAt: new Date().toISOString()
+      }
+    );
+    return response;
+  } catch (error) {
+    console.error('Error updating website:', error);
+    throw error;
+  }
+};
+
+export const deleteWebsite = async (websiteId: string) => {
+  try {
+    const response = await databases.deleteDocument(
+      DATABASE_ID,
+      COLLECTIONS.WEBSITES,
+      websiteId
+    );
+    return response;
+  } catch (error) {
+    console.error('Error deleting website:', error);
+    throw error;
+  }
+};
+
+// Event operations
+export const getEvents = async (userId: string, filters: {
+  website?: string;
+  eventType?: string;
+  startDate?: string;
+  endDate?: string;
+  limit?: number;
+} = {}) => {
+  try {
+    const queries = [Query.equal('userId', userId)];
+    
+    if (filters.website) {
+      queries.push(Query.equal('website', filters.website));
+    }
+    
+    if (filters.eventType) {
+      queries.push(Query.equal('eventType', filters.eventType));
+    }
+    
+    if (filters.startDate) {
+      queries.push(Query.greaterThanEqual('timestamp', filters.startDate));
+    }
+    
+    if (filters.endDate) {
+      queries.push(Query.lessThanEqual('timestamp', filters.endDate));
+    }
+    
+    queries.push(Query.orderDesc('timestamp'));
+    
+    if (filters.limit) {
+      queries.push(Query.limit(filters.limit));
+    }
+    
+    const response = await databases.listDocuments(
+      DATABASE_ID,
+      COLLECTIONS.EVENTS,
+      queries
+    );
+    return response.documents;
+  } catch (error) {
+    console.error('Error fetching events:', error);
+    throw error;
+  }
+};
+
+// Analytics aggregation functions
+export const getAnalyticsSummary = async (userId: string, website: string, dateRange: {
+  startDate: string;
+  endDate: string;
+}) => {
+  try {
+    const events = await getEvents(userId, {
+      website,
+      startDate: dateRange.startDate,
+      endDate: dateRange.endDate
+    });
+    
+    // Calculate analytics metrics
+    const pageViews = events.filter(e => e.eventType === 'page_view');
+    const uniqueVisitors = new Set(events.map(e => e.sessionId)).size;
+    const totalEvents = events.length;
+    
+    // Calculate bounce rate (sessions with only one page view)
+    const sessionPageViews = events
+      .filter(e => e.eventType === 'page_view')
+      .reduce((acc, event) => {
+        acc[event.sessionId] = (acc[event.sessionId] || 0) + 1;
+        return acc;
+      }, {} as Record<string, number>);
+    
+    const bouncedSessions = Object.values(sessionPageViews).filter(count => count === 1).length;
+    const bounceRate = uniqueVisitors > 0 ? (bouncedSessions / uniqueVisitors) * 100 : 0;
+    
+    // Calculate average session duration
+    const sessionDurations = events
+      .filter(e => e.eventType === 'page_blur' && e.metadata)
+      .map(e => {
+        try {
+          const metadata = typeof e.metadata === 'string' ? JSON.parse(e.metadata) : e.metadata;
+          return metadata.sessionDuration || 0;
+        } catch {
+          return 0;
+        }
+      });
+    
+    const avgDuration = sessionDurations.length > 0 
+      ? sessionDurations.reduce((sum, duration) => sum + duration, 0) / sessionDurations.length
+      : 0;
+    
+    // Top pages
+    const pageViewCounts = pageViews.reduce((acc, event) => {
+      acc[event.path] = (acc[event.path] || 0) + 1;
+      return acc;
+    }, {} as Record<string, number>);
+    
+    const topPages = Object.entries(pageViewCounts)
+      .sort(([, a], [, b]) => b - a)
+      .slice(0, 10)
+      .map(([path, views]) => ({ path, views }));
+    
+    // Conversion rate (form submissions / unique visitors)
+    const formSubmissions = events.filter(e => e.eventType === 'form_submit').length;
+    const conversionRate = uniqueVisitors > 0 ? (formSubmissions / uniqueVisitors) * 100 : 0;
+    
+    // Real-time active users (last 5 minutes)
+    const fiveMinutesAgo = new Date(Date.now() - 5 * 60 * 1000).toISOString();
+    const recentEvents = events.filter(e => e.timestamp > fiveMinutesAgo);
+    const activeUsers = new Set(recentEvents.map(e => e.sessionId)).size;
+    
+    return {
+      totalVisitors: uniqueVisitors,
+      pageViews: pageViews.length,
+      bounceRate: Math.round(bounceRate * 100) / 100,
+      avgDuration: Math.round(avgDuration / 1000), // Convert to seconds
+      conversionRate: Math.round(conversionRate * 100) / 100,
+      topPages,
+      activeUsers,
+      totalEvents
+    };
+  } catch (error) {
+    console.error('Error calculating analytics summary:', error);
+    throw error;
+  }
+};
+
+// Check if website tracking is working
+export const checkWebsiteConnection = async (userId: string, website: string) => {
+  try {
+    // Check for recent events (last 24 hours)
+    const yesterday = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString();
+    const recentEvents = await getEvents(userId, {
+      website,
+      startDate: yesterday,
+      limit: 1
+    });
+    
+    return {
+      isConnected: recentEvents.length > 0,
+      lastEventTime: recentEvents.length > 0 ? recentEvents[0].timestamp : null,
+      eventCount: recentEvents.length
+    };
+  } catch (error) {
+    console.error('Error checking website connection:', error);
+    return {
+      isConnected: false,
+      lastEventTime: null,
+      eventCount: 0
+    };
+  }
 }; 

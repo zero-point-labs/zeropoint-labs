@@ -1,741 +1,420 @@
 "use client";
 
-import { useState } from "react";
-import { motion } from "framer-motion";
-import { DashboardCard, DashboardStatCard } from "@/components/ui/dashboard-card";
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
+import { useState, useEffect } from 'react';
+import { useAuth } from '@/lib/auth-context';
+import { useRouter } from 'next/navigation';
+import { getWebsites, getAnalyticsSummary } from '@/lib/appwrite';
+import { motion } from 'framer-motion';
 import { 
-  BarChart3, 
   TrendingUp, 
-  TrendingDown,
   Users, 
-  Globe,
-  Monitor,
-  Smartphone,
-  Tablet,
-  Clock,
-  Eye,
+  Eye, 
   MousePointerClick,
   ArrowUpRight,
   ArrowDownRight,
   Calendar,
-  Download,
-  Mail,
+  Globe,
   Activity,
+  Clock,
   Target,
-  MapPin,
-  Chrome,
-  Search,
-  Link2,
-  Share2,
-  CreditCard,
-  FileText,
-  PlayCircle,
-  ChevronDown,
-  Filter,
-  RefreshCw,
-  ExternalLink,
-  Zap
-} from "lucide-react";
+  BarChart3
+} from 'lucide-react';
+import { DashboardCard, DashboardStatCard } from '@/components/ui/dashboard-card';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
 
-// Mock data for comprehensive analytics
-const performanceMetrics = {
-  today: {
-    visitors: "1,234",
-    unique: "987",
-    bounceRate: "42.3%",
-    avgDuration: "3:42",
-    pageViews: "5,678",
-    conversionRate: "3.2%"
-  },
-  week: {
-    visitors: "8,456",
-    unique: "6,234",
-    bounceRate: "38.7%",
-    avgDuration: "4:12",
-    pageViews: "42,334",
-    conversionRate: "3.8%"
-  },
-  month: {
-    visitors: "34,567",
-    unique: "28,901",
-    bounceRate: "41.2%",
-    avgDuration: "3:56",
-    pageViews: "178,234",
-    conversionRate: "3.5%"
-  }
-};
-
-const trafficSources = [
-  { source: "Organic Search", visitors: "12,456", percentage: 35.2, change: "+12.3%", trend: "up", icon: Search, details: { google: "9,234", bing: "2,456", other: "766" } },
-  { source: "Direct Traffic", visitors: "8,234", percentage: 23.3, change: "+5.7%", trend: "up", icon: Globe, details: { typed: "5,123", bookmarks: "3,111" } },
-  { source: "Social Media", visitors: "6,891", percentage: 19.5, change: "-2.1%", trend: "down", icon: Share2, details: { facebook: "3,456", instagram: "2,234", twitter: "1,201" } },
-  { source: "Referral", visitors: "4,567", percentage: 12.9, change: "+8.9%", trend: "up", icon: Link2, details: { "example.com": "2,345", "blog.site": "1,234", other: "988" } },
-  { source: "Email Campaign", visitors: "2,107", percentage: 6.0, change: "+15.2%", trend: "up", icon: Mail, details: { newsletter: "1,543", promotional: "564" } },
-  { source: "Paid Ads", visitors: "1,098", percentage: 3.1, change: "-5.3%", trend: "down", icon: CreditCard, details: { google: "678", meta: "420" } },
-];
-
-const topPages = [
-  { page: "/", title: "Homepage", views: "45,234", avgTime: "2:34", exitRate: "23.4%", change: "+12.3%" },
-  { page: "/services", title: "Services", views: "23,456", avgTime: "3:12", exitRate: "34.2%", change: "+8.7%" },
-  { page: "/about", title: "About Us", views: "18,234", avgTime: "1:45", exitRate: "42.1%", change: "-2.3%" },
-  { page: "/portfolio", title: "Portfolio", views: "15,678", avgTime: "4:23", exitRate: "28.9%", change: "+15.6%" },
-  { page: "/contact", title: "Contact", views: "12,345", avgTime: "1:23", exitRate: "67.8%", change: "+3.2%" },
-  { page: "/blog/article-1", title: "Blog: SEO Tips", views: "8,901", avgTime: "5:12", exitRate: "45.6%", change: "+24.5%" },
-  { page: "/pricing", title: "Pricing", views: "7,654", avgTime: "2:56", exitRate: "52.3%", change: "-1.2%" },
-];
-
-const demographics = {
-  countries: [
-    { name: "United States", visitors: "12,345", percentage: 34.5, flag: "🇺🇸" },
-    { name: "United Kingdom", visitors: "6,789", percentage: 19.0, flag: "🇬🇧" },
-    { name: "Canada", visitors: "4,567", percentage: 12.8, flag: "🇨🇦" },
-    { name: "Australia", visitors: "3,456", percentage: 9.7, flag: "🇦🇺" },
-    { name: "Germany", visitors: "2,345", percentage: 6.5, flag: "🇩🇪" },
-    { name: "Others", visitors: "6,234", percentage: 17.5, flag: "🌍" },
-  ],
-  devices: [
-    { device: "Desktop", icon: Monitor, percentage: 58.5, sessions: "20,789", browser: { chrome: 65, safari: 20, firefox: 10, other: 5 } },
-    { device: "Mobile", icon: Smartphone, percentage: 35.2, sessions: "12,456", os: { ios: 55, android: 43, other: 2 } },
-    { device: "Tablet", icon: Tablet, percentage: 6.3, sessions: "2,234", os: { ios: 70, android: 28, other: 2 } },
-  ],
-  browsers: [
-    { name: "Chrome", percentage: 62.3, color: "bg-blue-500" },
-    { name: "Safari", percentage: 18.7, color: "bg-gray-500" },
-    { name: "Firefox", percentage: 9.2, color: "bg-orange-500" },
-    { name: "Edge", percentage: 6.8, color: "bg-green-500" },
-    { name: "Others", percentage: 3.0, color: "bg-purple-500" },
-  ]
-};
-
-const userBehavior = {
-  events: [
-    { event: "Button Clicks", count: "4,567", change: "+12.3%", trend: "up", icon: MousePointerClick },
-    { event: "Form Starts", count: "2,345", change: "+8.7%", trend: "up", icon: FileText },
-    { event: "Video Plays", count: "1,234", change: "+24.5%", trend: "up", icon: PlayCircle },
-    { event: "File Downloads", count: "567", change: "-2.1%", trend: "down", icon: Download },
-  ],
-  scrollDepth: [
-    { depth: "25%", percentage: 85 },
-    { depth: "50%", percentage: 62 },
-    { depth: "75%", percentage: 38 },
-    { depth: "100%", percentage: 12 },
-  ]
-};
-
-const conversions = {
-  goals: [
-    { name: "Contact Form", completions: "234", rate: "2.3%", value: "$11,700", change: "+15.2%", trend: "up" },
-    { name: "Quote Request", completions: "156", rate: "1.5%", value: "$23,400", change: "+8.9%", trend: "up" },
-    { name: "Newsletter Signup", completions: "567", rate: "5.6%", value: "$2,835", change: "+22.1%", trend: "up" },
-    { name: "Download Brochure", completions: "89", rate: "0.9%", value: "$445", change: "-5.3%", trend: "down" },
-  ],
-  funnels: [
-    { step: "Landing Page", visitors: "10,234", dropoff: "0%" },
-    { step: "Service Page", visitors: "6,123", dropoff: "40.2%" },
-    { step: "Contact Form", visitors: "2,456", dropoff: "59.9%" },
-    { step: "Form Submit", visitors: "234", dropoff: "90.5%" },
-  ]
-};
-
-const realTimeData = {
-  activeUsers: "47",
-  currentPageViews: "156",
-  topActivePages: [
-    { page: "/services", users: "12" },
-    { page: "/", users: "9" },
-    { page: "/contact", users: "7" },
-    { page: "/about", users: "5" },
-  ],
-  recentEvents: [
-    { time: "Just now", event: "Form submission", page: "/contact" },
-    { time: "1 min ago", event: "Video play", page: "/about" },
-    { time: "2 min ago", event: "Button click", page: "/services" },
-    { time: "3 min ago", event: "Page view", page: "/portfolio" },
-  ]
-};
+interface AnalyticsData {
+  totalVisitors: number;
+  pageViews: number;
+  bounceRate: number;
+  avgDuration: number;
+  conversionRate: number;
+  topPages: { path: string; views: number }[];
+  activeUsers: number;
+  totalEvents: number;
+}
 
 export default function AnalyticsPage() {
-  const [timeRange, setTimeRange] = useState("month");
-  const [selectedMetric, setSelectedMetric] = useState("visitors");
-  const [compareMode, setCompareMode] = useState(false);
-  const [expandedSource, setExpandedSource] = useState<number | null>(null);
+  const { user, isLoading } = useAuth();
+  const router = useRouter();
+  const [websites, setWebsites] = useState<any[]>([]);
+  const [selectedWebsite, setSelectedWebsite] = useState<any>(null);
+  const [analyticsData, setAnalyticsData] = useState<AnalyticsData | null>(null);
+  const [isLoadingData, setIsLoadingData] = useState(false);
+  const [dateRange, setDateRange] = useState('7d');
+  const [error, setError] = useState('');
 
-  const currentMetrics = performanceMetrics[timeRange as keyof typeof performanceMetrics];
+  // Redirect if not authenticated
+  useEffect(() => {
+    if (!isLoading && !user) {
+      router.push('/login');
+    }
+  }, [user, isLoading, router]);
 
-  const getChangeIndicator = (value: string, isPositive: boolean = true) => {
-    const expectedPositive = !value.includes('bounce') && !value.includes('exit');
-    const actuallyPositive = isPositive ? expectedPositive : !expectedPositive;
-    
+  // Load user's websites
+  useEffect(() => {
+    if (user) {
+      loadWebsites();
+    }
+  }, [user]);
+
+  // Load analytics data when website or date range changes
+  useEffect(() => {
+    if (selectedWebsite) {
+      loadAnalyticsData();
+    }
+  }, [selectedWebsite, dateRange]);
+
+  const loadWebsites = async () => {
+    try {
+      const userWebsites = await getWebsites(user!.$id);
+      setWebsites(userWebsites);
+      if (userWebsites.length > 0) {
+        setSelectedWebsite(userWebsites[0]);
+      }
+    } catch (error) {
+      console.error('Error loading websites:', error);
+      setError('Failed to load websites');
+    }
+  };
+
+  const loadAnalyticsData = async () => {
+    if (!selectedWebsite || !user) return;
+
+    setIsLoadingData(true);
+    setError('');
+
+    try {
+      // Calculate date range
+      const endDate = new Date();
+      const startDate = new Date();
+      
+      switch (dateRange) {
+        case '1d':
+          startDate.setDate(startDate.getDate() - 1);
+          break;
+        case '7d':
+          startDate.setDate(startDate.getDate() - 7);
+          break;
+        case '30d':
+          startDate.setDate(startDate.getDate() - 30);
+          break;
+        case '90d':
+          startDate.setDate(startDate.getDate() - 90);
+          break;
+      }
+
+      const data = await getAnalyticsSummary(
+        user.$id,
+        selectedWebsite.domain,
+        {
+          startDate: startDate.toISOString(),
+          endDate: endDate.toISOString()
+        }
+      );
+
+      setAnalyticsData(data);
+    } catch (error) {
+      console.error('Error loading analytics data:', error);
+      setError('Failed to load analytics data');
+    } finally {
+      setIsLoadingData(false);
+    }
+  };
+
+  const getDateRangeLabel = () => {
+    switch (dateRange) {
+      case '1d': return 'Last 24 hours';
+      case '7d': return 'Last 7 days';
+      case '30d': return 'Last 30 days';
+      case '90d': return 'Last 90 days';
+      default: return 'Last 7 days';
+    }
+  };
+
+  if (isLoading) {
     return (
-      <div className={`flex items-center gap-1 text-sm ${
-        actuallyPositive ? "text-green-500" : "text-red-500"
-      }`}>
-        {actuallyPositive ? (
-          <ArrowUpRight className="h-4 w-4" />
-        ) : (
-          <ArrowDownRight className="h-4 w-4" />
-        )}
-        {value}
+      <div className="flex items-center justify-center min-h-screen">
+        <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-blue-600"></div>
       </div>
     );
-  };
+  }
+
+  if (!user) {
+    return null;
+  }
+
+  if (websites.length === 0) {
+    return (
+      <div className="container mx-auto px-4 py-8 max-w-4xl">
+        <div className="text-center">
+          <Globe className="h-12 w-12 mx-auto mb-4 text-gray-400" />
+          <h1 className="text-2xl font-bold mb-2">No Websites Found</h1>
+          <p className="text-gray-600 mb-6">
+            You need to set up website tracking first to view analytics.
+          </p>
+          <Button onClick={() => router.push('/setup')}>
+            Set Up Analytics
+          </Button>
+        </div>
+      </div>
+    );
+  }
+
+  const stats = analyticsData ? [
+    {
+      label: "Total Visitors",
+      value: analyticsData.totalVisitors.toLocaleString(),
+      change: "+12.5%", // TODO: Calculate actual change
+      trend: "up",
+      icon: Users,
+      color: "from-blue-400 to-blue-600"
+    },
+    {
+      label: "Page Views",
+      value: analyticsData.pageViews.toLocaleString(),
+      change: "+8.2%", // TODO: Calculate actual change
+      trend: "up",
+      icon: Eye,
+      color: "from-purple-400 to-purple-600"
+    },
+    {
+      label: "Bounce Rate",
+      value: `${analyticsData.bounceRate}%`,
+      change: "-2.1%", // TODO: Calculate actual change
+      trend: "down",
+      icon: MousePointerClick,
+      color: "from-green-400 to-green-600"
+    },
+    {
+      label: "Avg. Duration",
+      value: `${Math.floor(analyticsData.avgDuration / 60)}m ${analyticsData.avgDuration % 60}s`,
+      change: "+18.7%", // TODO: Calculate actual change
+      trend: "up",
+      icon: Clock,
+      color: "from-orange-400 to-orange-600"
+    }
+  ] : [];
 
   return (
     <div className="space-y-6 sm:space-y-8 p-4 sm:p-6 lg:p-8">
-      {/* Header with Date Range */}
-      <div className="flex flex-col gap-4">
+      {/* Header */}
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
           <h1 className="text-2xl sm:text-3xl font-light text-foreground mb-2">Analytics Dashboard</h1>
-          <p className="text-sm sm:text-base text-muted-foreground">Comprehensive insights into your website performance</p>
+          <p className="text-sm sm:text-base text-muted-foreground">
+            Real-time insights for your website performance
+          </p>
         </div>
-        <div className="flex flex-col sm:flex-row sm:items-center gap-3">
-          <div className="flex items-center gap-2 bg-muted/30 rounded-lg p-1 flex-1 sm:flex-initial">
-            <button
-              onClick={() => setTimeRange("today")}
-              className={`px-2.5 sm:px-3 py-1.5 rounded-md text-xs sm:text-sm transition-all flex-1 sm:flex-initial ${
-                timeRange === "today" 
-                  ? "bg-orange-500 text-white" 
-                  : "text-muted-foreground hover:text-foreground"
-              }`}
-            >
-              Today
-            </button>
-            <button
-              onClick={() => setTimeRange("week")}
-              className={`px-2.5 sm:px-3 py-1.5 rounded-md text-xs sm:text-sm transition-all flex-1 sm:flex-initial ${
-                timeRange === "week" 
-                  ? "bg-orange-500 text-white" 
-                  : "text-muted-foreground hover:text-foreground"
-              }`}
-            >
-              7 Days
-            </button>
-            <button
-              onClick={() => setTimeRange("month")}
-              className={`px-2.5 sm:px-3 py-1.5 rounded-md text-xs sm:text-sm transition-all flex-1 sm:flex-initial ${
-                timeRange === "month" 
-                  ? "bg-orange-500 text-white" 
-                  : "text-muted-foreground hover:text-foreground"
-              }`}
-            >
-              30 Days
-            </button>
-          </div>
-          <div className="flex gap-2">
-            <Button variant="outline" size="sm" className="text-xs sm:text-sm">
-              <Calendar className="h-3 w-3 sm:h-4 sm:w-4 mr-1 sm:mr-2" />
-              <span className="hidden sm:inline">Custom Range</span>
-              <span className="sm:hidden">Custom</span>
-            </Button>
-            <Button variant="outline" size="sm" className="px-2 sm:px-3">
-              <RefreshCw className="h-3 w-3 sm:h-4 sm:w-4" />
-            </Button>
-          </div>
-        </div>
-      </div>
-
-      {/* Performance Overview */}
-      <div>
-        <h2 className="text-lg sm:text-xl font-medium text-foreground mb-4">Website Performance Overview</h2>
-        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3 sm:gap-4">
-          <DashboardStatCard 
-            interactive 
-            glow
-            icon={<Users className="h-4 w-4 sm:h-5 sm:w-5 text-blue-400" />}
-            trend={getChangeIndicator("+12.5%")}
+        
+        <div className="flex items-center gap-3">
+          {/* Website Selector */}
+          <select
+            value={selectedWebsite?.$id || ''}
+            onChange={(e) => {
+              const website = websites.find(w => w.$id === e.target.value);
+              setSelectedWebsite(website);
+            }}
+            className="px-3 py-2 border border-border rounded-lg bg-background text-foreground"
           >
-            <h3 className="text-lg sm:text-2xl font-semibold text-foreground">{currentMetrics.visitors}</h3>
-            <p className="text-xs sm:text-sm text-muted-foreground">Total Visitors</p>
-          </DashboardStatCard>
-
-          <DashboardStatCard 
-            interactive 
-            glow
-            icon={<Users className="h-4 w-4 sm:h-5 sm:w-5 text-purple-400" />}
-            trend={getChangeIndicator("+8.3%")}
-          >
-            <h3 className="text-lg sm:text-2xl font-semibold text-foreground">{currentMetrics.unique}</h3>
-            <p className="text-xs sm:text-sm text-muted-foreground">Unique Visitors</p>
-          </DashboardStatCard>
-
-          <DashboardStatCard 
-            interactive 
-            glow
-            icon={<Activity className="h-4 w-4 sm:h-5 sm:w-5 text-red-400" />}
-            trend={getChangeIndicator("-2.1%", false)}
-          >
-            <h3 className="text-lg sm:text-2xl font-semibold text-foreground">{currentMetrics.bounceRate}</h3>
-            <p className="text-xs sm:text-sm text-muted-foreground">Bounce Rate</p>
-          </DashboardStatCard>
-
-          <DashboardStatCard 
-            interactive 
-            glow
-            icon={<Clock className="h-4 w-4 sm:h-5 sm:w-5 text-green-400" />}
-            trend={getChangeIndicator("+18.7%")}
-          >
-            <h3 className="text-lg sm:text-2xl font-semibold text-foreground">{currentMetrics.avgDuration}</h3>
-            <p className="text-xs sm:text-sm text-muted-foreground">Avg. Duration</p>
-          </DashboardStatCard>
-
-          <DashboardStatCard 
-            interactive 
-            glow
-            icon={<Eye className="h-4 w-4 sm:h-5 sm:w-5 text-orange-400" />}
-            trend={getChangeIndicator("+15.4%")}
-          >
-            <h3 className="text-lg sm:text-2xl font-semibold text-foreground">{currentMetrics.pageViews}</h3>
-            <p className="text-xs sm:text-sm text-muted-foreground">Page Views</p>
-          </DashboardStatCard>
-
-          <DashboardStatCard 
-            interactive 
-            glow
-            icon={<Target className="h-4 w-4 sm:h-5 sm:w-5 text-indigo-400" />}
-            trend={getChangeIndicator("+0.3%")}
-          >
-            <h3 className="text-lg sm:text-2xl font-semibold text-foreground">{currentMetrics.conversionRate}</h3>
-            <p className="text-xs sm:text-sm text-muted-foreground">Conversion Rate</p>
-          </DashboardStatCard>
-        </div>
-      </div>
-
-      {/* Real-Time Analytics */}
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: 0.1 }}
-      >
-        <DashboardCard>
-          <div className="flex items-center justify-between mb-4 sm:mb-6">
-            <div className="flex items-center gap-2">
-              <h2 className="text-lg sm:text-xl font-medium text-foreground">Real-Time Analytics</h2>
-              <div className="flex items-center gap-1">
-                <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse" />
-                <span className="text-xs sm:text-sm text-green-500">Live</span>
-              </div>
-            </div>
-            <Zap className="h-4 w-4 sm:h-5 sm:w-5 text-yellow-400" />
-          </div>
-          
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 sm:gap-6">
-            <div className="text-center">
-              <div className="inline-flex items-center justify-center w-16 h-16 sm:w-20 sm:h-20 rounded-full bg-gradient-to-br from-green-400/20 to-green-600/20 mb-3">
-                <span className="text-2xl sm:text-3xl font-bold text-green-400">{realTimeData.activeUsers}</span>
-              </div>
-              <p className="text-xs sm:text-sm text-muted-foreground">Active Users Now</p>
-            </div>
-            
-            <div className="space-y-2">
-              <p className="text-xs sm:text-sm font-medium text-foreground mb-2">Top Active Pages</p>
-              {realTimeData.topActivePages.map((page, i) => (
-                <div key={i} className="flex items-center justify-between text-xs sm:text-sm">
-                  <span className="text-muted-foreground truncate mr-2">{page.page}</span>
-                  <Badge variant="secondary" className="text-xs">{page.users} users</Badge>
-                </div>
-              ))}
-            </div>
-            
-            <div className="space-y-2">
-              <p className="text-xs sm:text-sm font-medium text-foreground mb-2">Recent Events</p>
-              {realTimeData.recentEvents.map((event, i) => (
-                <div key={i} className="flex items-start gap-2 text-xs sm:text-sm">
-                  <span className="text-muted-foreground text-xs">{event.time}</span>
-                  <div>
-                    <p className="text-foreground">{event.event}</p>
-                    <p className="text-xs text-muted-foreground">{event.page}</p>
-                  </div>
-                </div>
-              ))}
-              </div>
-          </div>
-        </DashboardCard>
-      </motion.div>
-
-      {/* Traffic Sources & Demographics */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        {/* Traffic Sources */}
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: 0.2 }}
-      >
-        <DashboardCard>
-            <h2 className="text-xl font-medium text-foreground mb-6">Traffic Sources</h2>
-            <div className="space-y-4">
-              {trafficSources.map((source, index) => {
-                const Icon = source.icon;
-                return (
-                  <div key={index} className="space-y-2">
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center gap-2">
-                        <Icon className="h-4 w-4 text-muted-foreground" />
-                        <span className="text-sm font-medium text-foreground">{source.source}</span>
-          </div>
-                <div className="flex items-center gap-3">
-                        <span className="text-sm text-muted-foreground">{source.visitors}</span>
-                        <span className={`text-sm ${source.trend === 'up' ? 'text-green-500' : 'text-red-500'}`}>
-                          {source.change}
-                        </span>
-                  </div>
-                </div>
-                    <div className="relative">
-                      <div className="w-full bg-muted/30 rounded-full h-2">
-                        <motion.div 
-                          className="bg-gradient-to-r from-orange-400 to-orange-600 h-2 rounded-full"
-                          initial={{ width: 0 }}
-                          animate={{ width: `${source.percentage}%` }}
-                          transition={{ delay: 0.2 + index * 0.1, duration: 0.5 }}
-                        />
-                      </div>
-                </div>
-              </div>
-                );
-              })}
-          </div>
-        </DashboardCard>
-      </motion.div>
-
-        {/* Geographic Distribution */}
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: 0.3 }}
-        >
-          <DashboardCard>
-            <div className="flex items-center justify-between mb-6">
-              <h2 className="text-xl font-medium text-foreground">Visitor Demographics</h2>
-              <MapPin className="h-5 w-5 text-orange-400" />
-            </div>
-            <div className="space-y-3">
-              {demographics.countries.map((country, index) => (
-                <div key={index} className="flex items-center justify-between p-2 rounded-lg hover:bg-muted/20 transition-colors">
-                  <div className="flex items-center gap-3">
-                    <span className="text-2xl">{country.flag}</span>
-                    <div>
-                      <p className="text-sm font-medium text-foreground">{country.name}</p>
-                      <p className="text-xs text-muted-foreground">{country.percentage}% of traffic</p>
-                    </div>
-                  </div>
-                  <span className="text-sm text-muted-foreground">{country.visitors}</span>
-                </div>
-              ))}
-            </div>
-          </DashboardCard>
-        </motion.div>
-      </div>
-
-      {/* Device & Browser Stats */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        {/* Device Breakdown */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.4 }}
-          className="lg:col-span-2"
-      >
-        <DashboardCard>
-          <h2 className="text-xl font-medium text-foreground mb-6">Device Breakdown</h2>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-              {demographics.devices.map((device, index) => {
-              const Icon = device.icon;
-              return (
-                  <div
-                  key={device.device}
-                    className="text-center p-4 rounded-lg bg-muted/20 border border-border hover:border-orange-500/30 transition-all duration-200"
-                >
-                    <Icon className="h-10 w-10 text-orange-400 mx-auto mb-3" />
-                  <h3 className="text-2xl font-semibold text-foreground mb-1">{device.percentage}%</h3>
-                    <p className="text-sm text-muted-foreground mb-1">{device.device}</p>
-                  <p className="text-xs text-muted-foreground">{device.sessions} sessions</p>
-                  </div>
-              );
-            })}
-          </div>
-        </DashboardCard>
-      </motion.div>
-
-        {/* Browser Stats */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.5 }}
-        >
-          <DashboardCard>
-            <div className="flex items-center justify-between mb-6">
-              <h2 className="text-xl font-medium text-foreground">Browsers</h2>
-              <Chrome className="h-5 w-5 text-orange-400" />
-            </div>
-            <div className="space-y-3">
-              {demographics.browsers.map((browser, index) => (
-                <div key={index}>
-                  <div className="flex items-center justify-between mb-1">
-                    <span className="text-sm text-foreground">{browser.name}</span>
-                    <span className="text-sm text-muted-foreground">{browser.percentage}%</span>
-                  </div>
-                  <div className="w-full bg-muted/30 rounded-full h-2">
-                    <motion.div 
-                      className={`${browser.color} h-2 rounded-full`}
-                      initial={{ width: 0 }}
-                      animate={{ width: `${browser.percentage}%` }}
-                      transition={{ delay: 0.5 + index * 0.1, duration: 0.5 }}
-                    />
-                  </div>
-                </div>
-              ))}
-          </div>
-        </DashboardCard>
-        </motion.div>
-      </div>
-
-      {/* Top Pages with Enhanced Metrics */}
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: 0.6 }}
-      >
-        <DashboardCard>
-          <div className="flex items-center justify-between mb-4 sm:mb-6">
-            <h2 className="text-lg sm:text-xl font-medium text-foreground">Top Pages Performance</h2>
-            <div className="flex items-center gap-2">
-              <Button variant="outline" size="sm" className="hidden sm:flex">
-                <Filter className="h-4 w-4 mr-2" />
-                Filter
-              </Button>
-              <Button variant="outline" size="sm" className="px-2 sm:px-3">
-                <Download className="h-3 w-3 sm:h-4 sm:w-4" />
-              </Button>
-            </div>
-          </div>
-          
-          {/* Mobile Card View */}
-          <div className="block sm:hidden space-y-3">
-            {topPages.map((page, index) => (
-              <motion.div
-                key={index}
-                initial={{ opacity: 0, x: -20 }}
-                animate={{ opacity: 1, x: 0 }}
-                transition={{ delay: 0.6 + index * 0.05 }}
-                className="p-4 rounded-lg bg-muted/20 border border-border/30"
-              >
-                <div className="flex items-start justify-between mb-2">
-                  <div className="flex-1 min-w-0">
-                    <p className="font-medium text-foreground truncate">{page.title}</p>
-                    <p className="text-xs text-muted-foreground">{page.page}</p>
-                  </div>
-                  <Badge variant={page.change.startsWith('+') ? 'default' : 'secondary'} className="text-xs">
-                    {page.change}
-                  </Badge>
-                </div>
-                <div className="grid grid-cols-3 gap-3 text-xs">
-                  <div>
-                    <p className="text-muted-foreground">Views</p>
-                    <p className="font-medium text-foreground">{page.views}</p>
-                  </div>
-                  <div>
-                    <p className="text-muted-foreground">Avg. Time</p>
-                    <p className="font-medium text-foreground">{page.avgTime}</p>
-                  </div>
-                  <div>
-                    <p className="text-muted-foreground">Exit Rate</p>
-                    <p className="font-medium text-foreground">{page.exitRate}</p>
-                  </div>
-                </div>
-              </motion.div>
+            {websites.map((website) => (
+              <option key={website.$id} value={website.$id}>
+                {website.domain}
+              </option>
             ))}
-          </div>
-          
-          {/* Desktop Table View */}
-          <div className="hidden sm:block overflow-x-auto">
-            <table className="w-full">
-              <thead className="text-sm text-muted-foreground border-b border-border">
-                <tr>
-                  <th className="text-left py-3 px-2">Page</th>
-                  <th className="text-right py-3 px-2">Views</th>
-                  <th className="text-right py-3 px-2">Avg. Time</th>
-                  <th className="text-right py-3 px-2">Exit Rate</th>
-                  <th className="text-right py-3 px-2">Change</th>
-                  <th className="text-right py-3 px-2">Actions</th>
-                </tr>
-              </thead>
-              <tbody>
-                {topPages.map((page, index) => (
-                  <motion.tr
-                    key={index}
-                    initial={{ opacity: 0, x: -20 }}
-                    animate={{ opacity: 1, x: 0 }}
-                    transition={{ delay: 0.6 + index * 0.05 }}
-                    className="border-b border-border/50 hover:bg-muted/20 transition-colors"
-                  >
-                    <td className="py-3 px-2">
-                      <div className="flex items-center gap-2">
-                        <FileText className="h-4 w-4 text-muted-foreground" />
-                        <div>
-                          <p className="font-medium text-foreground">{page.title}</p>
-                          <p className="text-xs text-muted-foreground">{page.page}</p>
-                        </div>
-                      </div>
-                    </td>
-                    <td className="text-right py-3 px-2 font-medium">{page.views}</td>
-                    <td className="text-right py-3 px-2 text-muted-foreground">{page.avgTime}</td>
-                    <td className="text-right py-3 px-2">
-                      <Badge variant={parseFloat(page.exitRate) > 50 ? "destructive" : "secondary"}>
-                        {page.exitRate}
-                      </Badge>
-                    </td>
-                    <td className="text-right py-3 px-2">
-                      <span className={`text-sm font-medium ${
-                        page.change.startsWith('+') ? 'text-green-500' : 'text-red-500'
-                      }`}>
-                        {page.change}
-                      </span>
-                    </td>
-                    <td className="text-right py-3 px-2">
-                      <Button variant="outline" size="sm">
-                        <ExternalLink className="h-3 w-3" />
-                      </Button>
-                    </td>
-                  </motion.tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        </DashboardCard>
-      </motion.div>
+          </select>
 
-      {/* User Behavior & Conversions */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        {/* User Behavior */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.7 }}
-        >
-          <DashboardCard>
-            <h2 className="text-xl font-medium text-foreground mb-6">User Behavior</h2>
+          {/* Date Range Selector */}
+          <select
+            value={dateRange}
+            onChange={(e) => setDateRange(e.target.value)}
+            className="px-3 py-2 border border-border rounded-lg bg-background text-foreground"
+          >
+            <option value="1d">Last 24 hours</option>
+            <option value="7d">Last 7 days</option>
+            <option value="30d">Last 30 days</option>
+            <option value="90d">Last 90 days</option>
+          </select>
+        </div>
+      </div>
+
+      {/* Current Selection Info */}
+      {selectedWebsite && (
+        <div className="flex items-center gap-2 text-sm text-muted-foreground">
+          <Globe className="h-4 w-4" />
+          <span>{selectedWebsite.domain}</span>
+          <span>•</span>
+          <Calendar className="h-4 w-4" />
+          <span>{getDateRangeLabel()}</span>
+          {analyticsData && (
+            <>
+              <span>•</span>
+              <Activity className="h-4 w-4" />
+              <span>{analyticsData.activeUsers} active users</span>
+            </>
+          )}
+        </div>
+      )}
+
+      {error && (
+        <div className="bg-red-50 border border-red-200 rounded-lg p-4">
+          <p className="text-red-800">{error}</p>
+        </div>
+      )}
+
+      {/* Loading State */}
+      {isLoadingData && (
+        <div className="flex items-center justify-center py-12">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+          <span className="ml-2 text-muted-foreground">Loading analytics...</span>
+        </div>
+      )}
+
+      {/* Stats Grid */}
+      {analyticsData && (
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
+          {stats.map((stat, index) => {
+            const Icon = stat.icon;
+            const isPositive = stat.trend === "up";
             
-            <div className="space-y-6">
-              {/* Event Tracking */}
-              <div>
-                <p className="text-sm font-medium text-muted-foreground mb-3">Event Tracking</p>
-                <div className="grid grid-cols-2 gap-3">
-                  {userBehavior.events.map((event, index) => {
-                    const Icon = event.icon;
-                    return (
-                      <div key={index} className="p-3 rounded-lg bg-muted/20 border border-border">
-                        <div className="flex items-center justify-between mb-2">
-                          <Icon className="h-4 w-4 text-orange-400" />
-                          <span className={`text-xs ${event.trend === 'up' ? 'text-green-500' : 'text-red-500'}`}>
-                            {event.change}
+            return (
+              <motion.div
+                key={stat.label}
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: index * 0.1 }}
+              >
+                <DashboardStatCard 
+                  interactive
+                  glow
+                  icon={
+                    <div className={`w-10 h-10 sm:w-12 sm:h-12 rounded-lg bg-gradient-to-br ${stat.color} flex items-center justify-center shadow-lg`}>
+                      <Icon className="h-5 w-5 sm:h-6 sm:w-6 text-white" />
+                    </div>
+                  }
+                  trend={
+                    <div className={`flex items-center gap-1 text-xs sm:text-sm ${
+                      isPositive ? "text-green-500 dark:text-green-400" : "text-red-500 dark:text-red-400"
+                    }`}>
+                      {isPositive ? (
+                        <ArrowUpRight className="h-3 w-3 sm:h-4 sm:w-4" />
+                      ) : (
+                        <ArrowDownRight className="h-3 w-3 sm:h-4 sm:w-4" />
+                      )}
+                      {stat.change}
+                    </div>
+                  }
+                >
+                  <h3 className="text-xl sm:text-2xl font-semibold text-foreground mb-1">{stat.value}</h3>
+                  <p className="text-xs sm:text-sm text-muted-foreground">{stat.label}</p>
+                </DashboardStatCard>
+              </motion.div>
+            );
+          })}
+        </div>
+      )}
+
+      {/* Additional Analytics */}
+      {analyticsData && (
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6">
+          {/* Top Pages */}
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.4 }}
+          >
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <BarChart3 className="h-5 w-5" />
+                  Top Pages
+                </CardTitle>
+                <CardDescription>Most visited pages on your website</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-3">
+                  {analyticsData.topPages.length > 0 ? (
+                    analyticsData.topPages.map((page, index) => (
+                      <div key={page.path} className="flex items-center justify-between">
+                        <div className="flex items-center gap-2">
+                          <span className="text-sm text-muted-foreground w-4">
+                            {index + 1}
+                          </span>
+                          <span className="text-sm font-medium truncate">
+                            {page.path === '/' ? 'Homepage' : page.path}
                           </span>
                         </div>
-                        <p className="text-lg font-semibold text-foreground">{event.count}</p>
-                        <p className="text-xs text-muted-foreground">{event.event}</p>
+                        <Badge variant="secondary">
+                          {page.views} views
+                        </Badge>
                       </div>
-                    );
-                  })}
+                    ))
+                  ) : (
+                    <p className="text-sm text-muted-foreground">No page data available</p>
+                  )}
                 </div>
-              </div>
-              
-              {/* Scroll Depth */}
-            <div>
-                <p className="text-sm font-medium text-muted-foreground mb-3">Average Scroll Depth</p>
-                <div className="space-y-2">
-                  {userBehavior.scrollDepth.map((depth, index) => (
-                    <div key={index} className="flex items-center justify-between">
-                      <span className="text-sm text-foreground">{depth.depth}</span>
-                      <div className="flex items-center gap-2 flex-1 ml-4">
-                        <div className="flex-1 bg-muted/30 rounded-full h-2">
-                          <motion.div 
-                            className="bg-gradient-to-r from-blue-400 to-blue-600 h-2 rounded-full"
-                            initial={{ width: 0 }}
-                            animate={{ width: `${depth.percentage}%` }}
-                            transition={{ delay: 0.7 + index * 0.1, duration: 0.5 }}
-                          />
-                        </div>
-                        <span className="text-sm text-muted-foreground w-12 text-right">{depth.percentage}%</span>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            </div>
-          </DashboardCard>
-        </motion.div>
+              </CardContent>
+            </Card>
+          </motion.div>
 
-        {/* Conversions & Goals */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.8 }}
-        >
-          <DashboardCard>
-            <div className="flex items-center justify-between mb-6">
-              <h2 className="text-xl font-medium text-foreground">Conversions & Goals</h2>
-              <Target className="h-5 w-5 text-orange-400" />
-            </div>
-            
-            <div className="space-y-4">
-              {conversions.goals.map((goal, index) => (
-                <div key={index} className="p-4 rounded-lg bg-muted/20 border border-border hover:border-orange-500/30 transition-all">
-                  <div className="flex items-center justify-between mb-2">
-                    <h4 className="text-sm font-medium text-foreground">{goal.name}</h4>
-                    <span className={`text-sm ${goal.trend === 'up' ? 'text-green-500' : 'text-red-500'}`}>
-                      {goal.change}
+          {/* Conversion & Engagement */}
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.5 }}
+          >
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Target className="h-5 w-5" />
+                  Conversion & Engagement
+                </CardTitle>
+                <CardDescription>User interaction metrics</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-4">
+                  <div className="flex items-center justify-between">
+                    <span className="text-sm text-muted-foreground">Conversion Rate</span>
+                    <span className="text-sm font-medium">{analyticsData.conversionRate}%</span>
+                  </div>
+                  <div className="flex items-center justify-between">
+                    <span className="text-sm text-muted-foreground">Bounce Rate</span>
+                    <span className="text-sm font-medium">{analyticsData.bounceRate}%</span>
+                  </div>
+                  <div className="flex items-center justify-between">
+                    <span className="text-sm text-muted-foreground">Total Events</span>
+                    <span className="text-sm font-medium">{analyticsData.totalEvents.toLocaleString()}</span>
+                  </div>
+                  <div className="flex items-center justify-between">
+                    <span className="text-sm text-muted-foreground">Active Users</span>
+                    <span className="text-sm font-medium flex items-center gap-1">
+                      <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
+                      {analyticsData.activeUsers}
                     </span>
                   </div>
-                  <div className="grid grid-cols-3 gap-2 text-sm">
-                    <div>
-                      <p className="text-muted-foreground text-xs">Completions</p>
-                      <p className="font-semibold text-foreground">{goal.completions}</p>
-                    </div>
-                    <div>
-                      <p className="text-muted-foreground text-xs">Conv. Rate</p>
-                      <p className="font-semibold text-foreground">{goal.rate}</p>
-                    </div>
-                    <div>
-                      <p className="text-muted-foreground text-xs">Value</p>
-                      <p className="font-semibold text-green-500">{goal.value}</p>
-                    </div>
-                  </div>
                 </div>
-              ))}
-          </div>
-        </DashboardCard>
-        </motion.div>
-      </div>
+              </CardContent>
+            </Card>
+          </motion.div>
+        </div>
+      )}
 
-      {/* Export Options */}
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: 0.9 }}
-      >
-        <DashboardCard>
-          <div className="flex items-center justify-between">
-            <div>
-              <h2 className="text-xl font-medium text-foreground mb-2">Export & Share Reports</h2>
-              <p className="text-sm text-muted-foreground">Generate and share comprehensive analytics reports</p>
-            </div>
-            <div className="flex items-center gap-3">
-              <Button variant="outline">
-                <Mail className="h-4 w-4 mr-2" />
-                Schedule Report
-              </Button>
-              <Button variant="outline">
-                <Download className="h-4 w-4 mr-2" />
-                Export PDF
-              </Button>
-              <Button className="bg-orange-500 hover:bg-orange-600 text-white">
-                <Share2 className="h-4 w-4 mr-2" />
-                Share Dashboard
-              </Button>
-            </div>
-          </div>
-        </DashboardCard>
-      </motion.div>
+      {/* No Data State */}
+      {analyticsData && analyticsData.totalEvents === 0 && (
+        <Card>
+          <CardContent className="text-center py-12">
+            <Activity className="h-12 w-12 mx-auto mb-4 text-gray-400" />
+            <h3 className="text-lg font-medium mb-2">No Data Available</h3>
+            <p className="text-gray-600 mb-4">
+              No analytics data found for the selected time period. Make sure your tracking script is installed and your website is receiving traffic.
+            </p>
+            <Button onClick={() => router.push('/setup')}>
+              Check Setup
+            </Button>
+          </CardContent>
+        </Card>
+      )}
     </div>
   );
 } 

@@ -7,10 +7,15 @@ import {
   Eye, 
   MousePointerClick,
   ArrowUpRight,
-  ArrowDownRight
+  ArrowDownRight,
+  BarChart3,
+  Globe,
+  Settings
 } from "lucide-react";
 import { DashboardCard, DashboardStatCard } from "@/components/ui/dashboard-card";
 import { CRMDashboard } from "@/components/ui/crm-components";
+import { Button } from "@/components/ui/button";
+import { useRouter } from "next/navigation";
 
 const stats = [
   {
@@ -48,19 +53,21 @@ const stats = [
 ];
 
 const recentActivity = [
-  { time: "2 hours ago", event: "New form submission", details: "Contact form - John Doe" },
-  { time: "4 hours ago", event: "Site deployed", details: "Version 2.1.0 live" },
-  { time: "Yesterday", event: "SSL renewed", details: "Certificate updated successfully" },
-  { time: "2 days ago", event: "Backup completed", details: "Full site backup stored" },
+  { time: "2 hours ago", event: "New analytics data", details: "gprealty-cy.com - 45 new visitors" },
+  { time: "4 hours ago", event: "Website tracking active", details: "Real-time events being recorded" },
+  { time: "Yesterday", event: "Analytics setup completed", details: "Tracking script successfully installed" },
+  { time: "2 days ago", event: "New website added", details: "gprealty-cy.com configured for tracking" },
 ];
 
 export default function DashboardPage() {
+  const router = useRouter();
+
   return (
     <div className="space-y-6 sm:space-y-8 p-4 sm:p-6 lg:p-8">
       {/* Header */}
       <div>
         <h1 className="text-2xl sm:text-3xl font-light text-foreground mb-2">Dashboard Overview</h1>
-        <p className="text-sm sm:text-base text-muted-foreground">Welcome back! Here's what's happening with your website.</p>
+        <p className="text-sm sm:text-base text-muted-foreground">Welcome back! Here's what's happening with your analytics platform.</p>
       </div>
 
       {/* Stats Grid */}
@@ -105,6 +112,51 @@ export default function DashboardPage() {
         })}
       </div>
 
+      {/* Analytics Quick Actions */}
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.3 }}
+      >
+        <DashboardCard>
+          <h2 className="text-lg sm:text-xl font-medium text-foreground mb-4 sm:mb-6">Analytics Platform</h2>
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3 sm:gap-4">
+            <button 
+              onClick={() => router.push('/dashboard/analytics')}
+              className="p-3 sm:p-4 rounded-lg bg-muted/20 hover:bg-muted/30 border border-border/30 hover:border-border/50 transition-all duration-200 text-left group"
+            >
+              <div className="flex items-center gap-2 mb-2">
+                <BarChart3 className="h-5 w-5 text-blue-500 group-hover:text-blue-600 transition-colors" />
+                <h3 className="text-sm sm:text-base text-foreground font-medium group-hover:text-blue-600 transition-colors">View Analytics</h3>
+              </div>
+              <p className="text-xs sm:text-sm text-muted-foreground">Real-time website analytics dashboard</p>
+            </button>
+            
+            <button 
+              onClick={() => router.push('/setup')}
+              className="p-3 sm:p-4 rounded-lg bg-muted/20 hover:bg-muted/30 border border-border/30 hover:border-border/50 transition-all duration-200 text-left group"
+            >
+              <div className="flex items-center gap-2 mb-2">
+                <Globe className="h-5 w-5 text-green-500 group-hover:text-green-600 transition-colors" />
+                <h3 className="text-sm sm:text-base text-foreground font-medium group-hover:text-green-600 transition-colors">Setup Tracking</h3>
+              </div>
+              <p className="text-xs sm:text-sm text-muted-foreground">Add websites and configure tracking</p>
+            </button>
+            
+            <button 
+              onClick={() => router.push('/dashboard/settings')}
+              className="p-3 sm:p-4 rounded-lg bg-muted/20 hover:bg-muted/30 border border-border/30 hover:border-border/50 transition-all duration-200 text-left group"
+            >
+              <div className="flex items-center gap-2 mb-2">
+                <Settings className="h-5 w-5 text-purple-500 group-hover:text-purple-600 transition-colors" />
+                <h3 className="text-sm sm:text-base text-foreground font-medium group-hover:text-purple-600 transition-colors">Settings</h3>
+              </div>
+              <p className="text-xs sm:text-sm text-muted-foreground">Configure analytics preferences</p>
+            </button>
+          </div>
+        </DashboardCard>
+      </motion.div>
+
       {/* Charts and Activity */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-6">
         {/* Traffic Chart */}
@@ -115,10 +167,22 @@ export default function DashboardPage() {
           className="lg:col-span-2"
         >
           <DashboardCard>
-            <h2 className="text-lg sm:text-xl font-medium text-foreground mb-4 sm:mb-6">Traffic Overview</h2>
+            <div className="flex items-center justify-between mb-4 sm:mb-6">
+              <h2 className="text-lg sm:text-xl font-medium text-foreground">Traffic Overview</h2>
+              <Button 
+                variant="outline" 
+                size="sm"
+                onClick={() => router.push('/dashboard/analytics')}
+              >
+                View Details
+              </Button>
+            </div>
             {/* Placeholder for chart - in real app, you'd use a charting library */}
             <div className="h-48 sm:h-64 bg-muted/20 rounded-lg flex items-center justify-center border border-border/30">
-              <p className="text-sm sm:text-base text-muted-foreground">Chart visualization would go here</p>
+              <div className="text-center">
+                <BarChart3 className="h-12 w-12 text-muted-foreground mx-auto mb-2" />
+                <p className="text-sm sm:text-base text-muted-foreground">Real analytics charts available in Analytics Dashboard</p>
+              </div>
             </div>
           </DashboardCard>
         </motion.div>
@@ -156,17 +220,23 @@ export default function DashboardPage() {
         <DashboardCard>
           <h2 className="text-lg sm:text-xl font-medium text-foreground mb-4 sm:mb-6">Quick Actions</h2>
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3 sm:gap-4">
-            <button className="p-3 sm:p-4 rounded-lg bg-muted/20 hover:bg-muted/30 border border-border/30 hover:border-border/50 transition-all duration-200 text-left group">
-              <h3 className="text-sm sm:text-base text-foreground font-medium mb-1 group-hover:text-orange-500 transition-colors">Edit Homepage</h3>
-              <p className="text-xs sm:text-sm text-muted-foreground">Update content and images</p>
+            <button 
+              onClick={() => router.push('/setup')}
+              className="p-3 sm:p-4 rounded-lg bg-muted/20 hover:bg-muted/30 border border-border/30 hover:border-border/50 transition-all duration-200 text-left group"
+            >
+              <h3 className="text-sm sm:text-base text-foreground font-medium mb-1 group-hover:text-orange-500 transition-colors">Add Website</h3>
+              <p className="text-xs sm:text-sm text-muted-foreground">Configure tracking for a new website</p>
+            </button>
+            <button 
+              onClick={() => router.push('/dashboard/analytics')}
+              className="p-3 sm:p-4 rounded-lg bg-muted/20 hover:bg-muted/30 border border-border/30 hover:border-border/50 transition-all duration-200 text-left group"
+            >
+              <h3 className="text-sm sm:text-base text-foreground font-medium mb-1 group-hover:text-orange-500 transition-colors">View Reports</h3>
+              <p className="text-xs sm:text-sm text-muted-foreground">Detailed analytics reports</p>
             </button>
             <button className="p-3 sm:p-4 rounded-lg bg-muted/20 hover:bg-muted/30 border border-border/30 hover:border-border/50 transition-all duration-200 text-left group">
-              <h3 className="text-sm sm:text-base text-foreground font-medium mb-1 group-hover:text-orange-500 transition-colors">View Analytics</h3>
-              <p className="text-xs sm:text-sm text-muted-foreground">Detailed traffic reports</p>
-            </button>
-            <button className="p-3 sm:p-4 rounded-lg bg-muted/20 hover:bg-muted/30 border border-border/30 hover:border-border/50 transition-all duration-200 text-left group">
-              <h3 className="text-sm sm:text-base text-foreground font-medium mb-1 group-hover:text-orange-500 transition-colors">Check Forms</h3>
-              <p className="text-xs sm:text-sm text-muted-foreground">New submissions waiting</p>
+              <h3 className="text-sm sm:text-base text-foreground font-medium mb-1 group-hover:text-orange-500 transition-colors">Export Data</h3>
+              <p className="text-xs sm:text-sm text-muted-foreground">Download analytics data</p>
             </button>
           </div>
         </DashboardCard>
