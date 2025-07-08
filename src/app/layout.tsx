@@ -5,6 +5,7 @@ import ConditionalLayout from "@/components/layout/ConditionalLayout";
 import { ThemeProvider } from "@/lib/theme-context";
 import { AuthProvider } from "@/lib/auth-context";
 import { Analytics } from "@vercel/analytics/next";
+import Script from "next/script";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -39,6 +40,14 @@ export default function RootLayout({
           </ThemeProvider>
         </AuthProvider>
         <Analytics />
+        <Script
+          defer
+          data-domain="zeropoint-labs.com"
+          src="https://plausible.io/js/script.file-downloads.hash.outbound-links.pageview-props.revenue.tagged-events.js"
+        />
+        <Script id="plausible-inline">
+          {`window.plausible = window.plausible || function() { (window.plausible.q = window.plausible.q || []).push(arguments) }`}
+        </Script>
       </body>
     </html>
   );
