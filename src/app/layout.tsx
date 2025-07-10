@@ -42,12 +42,9 @@ export default function RootLayout({
         <Analytics />
         <Script
           defer
-          data-domain="zeropoint-labs.com"
-          src="https://plausible.io/js/script.file-downloads.hash.outbound-links.pageview-props.revenue.tagged-events.js"
+          data-domain="www.zeropoint-labs.com"
+          src="https://plausible.io/js/script.js"
         />
-        <Script id="plausible-inline">
-          {`window.plausible = window.plausible || function() { (window.plausible.q = window.plausible.q || []).push(arguments) }`}
-        </Script>
       </body>
     </html>
   );
